@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorize Me - Photo Slideshow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="slideshow-container">
+        <div id="photo-container" class="photo-container">
+            <img id="current-photo" class="photo" src="" alt="Memory Photo">
+            <div class="photo-info">
+                <h3 id="photo-name"></h3>
+                <p id="photo-date"></p>
+                <p id="photo-details"></p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="prev-button" class="nav-button">Previous</button>
+            <button id="next-button" class="nav-button">Next</button>
+        </div>
+        
+        <div class="admin-panel">
+            <button id="scan-button">Scan NAS</button>
+            <button id="fetch-button">Fetch Photos</button>
+            <input type="number" id="fetch-count" min="1" max="100" value="10">
+            <span id="status-message"></span>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

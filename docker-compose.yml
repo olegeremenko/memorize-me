@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  memorize-me:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: memorize-me
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Store photos and database on the host machine
+      - ./backend/data:/app/backend/data
+      # Mount your .env file for configuration
+      - ./.env:/app/.env
+    environment:
+      # Override environment variables as needed
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+    # Use specific memory limits for Raspberry Pi 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M

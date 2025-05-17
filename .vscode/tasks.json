@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Development Server",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "dev"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Initialize Database",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "init-db"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Fetch Photos",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "fetch-photos"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Docker Image",
+      "type": "shell",
+      "command": "docker-compose build",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Docker Container",
+      "type": "shell",
+      "command": "docker-compose up -d",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
