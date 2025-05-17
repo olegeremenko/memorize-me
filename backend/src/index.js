@@ -114,7 +114,7 @@ app.post('/api/photos/viewed', async (req, res) => {
 });
 
 // Schedule daily photo fetching at midnight
-schedule.scheduleJob('0 0 * * *', async () => {
+schedule.scheduleJob(process.env.FETCH_PHOTOS_SCHEDULE || '0 0 * * *', async () => {
   console.log('Running scheduled photo fetch job');
   try {
     const count = parseInt(process.env.PHOTOS_PER_DAY) || 10;

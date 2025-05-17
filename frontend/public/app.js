@@ -22,9 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPhotoIndex = 0;
     let slideshowInterval = null;
     const SLIDESHOW_INTERVAL = parseInt(localStorage.getItem('slideshow-interval')) || 300000; // 5 minutes default
-    
-    // Initialize the application
+      // Initialize the application
     const init = async () => {
+        // Hide navigation buttons initially until we know we have photos
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+        
         try {
             await loadPhotos();
             if (photos.length > 0) {
@@ -67,11 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorMessage('Failed to load photos from server.');
             return [];
         }
-    };
-
-    // Display a photo by index
+    };    // Display a photo by index
     const showPhoto = (index) => {
         if (photos.length === 0) return;
+        
+        // Show navigation buttons as we have photos to display
+        prevButton.style.display = 'block';
+        nextButton.style.display = 'block';
         
         currentPhotoIndex = index;
         
@@ -155,6 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
         photoNameEl.textContent = 'No Photos Available';
         photoDateEl.textContent = 'Please use the admin panel to scan your NAS and fetch photos';
         photoDetailsEl.textContent = '';
+        
+        // Hide navigation buttons when no photos are available
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
     };
     
     // Show error message

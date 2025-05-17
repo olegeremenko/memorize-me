@@ -50,7 +50,7 @@ NAS_USERNAME=admin      # Change to your NAS username
 NAS_PASSWORD=password   # Change to your NAS password
 
 # Mounted Folder Configuration
-MOUNTED_PHOTOS_PATH=/mnt/nas_photos/__me  # Path to mounted NAS folder
+MOUNTED_PHOTOS_PATH=/mnt/nas_photos  # Path to mounted NAS folder
 
 # Local paths
 LOCAL_DB_PATH=./backend/data/photos.db
@@ -66,7 +66,7 @@ The application supports configuration of specific subdirectories to scan for ph
   "photoScanConfig": {
     "subfolders": [
       {
-        "path": "__2016",
+        "path": "2025",
         "recursive": true
       },
       {

@@ -2,11 +2,11 @@
   "photoScanConfig": {
     "subfolders": [
       {
-        "path": "__2016",
+        "path": "Mobile",
         "recursive": true
       },
       {
-        "path": "__2017",
+        "path": "__me",
         "recursive": false
       }
     ],

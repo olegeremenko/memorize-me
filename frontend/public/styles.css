@@ -60,9 +60,8 @@ body, html {
 
 /* Style for the logo when used as the current photo */
 .photo[src='logo.png'] {
-    max-width: 60%;
-    max-height: 60%;
-    opacity: 0.85;
+    max-width: 25%;
+    max-height: 25%;
 }
 
 .photo-info {
