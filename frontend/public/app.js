@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const fetchButton = document.getElementById('fetch-button');
     const fetchCountInput = document.getElementById('fetch-count');
     const statusMessageEl = document.getElementById('status-message');
+    const showDatabaseButton = document.getElementById('show-database-button');
+    const photoDatabaseModal = document.getElementById('photo-database-modal');
+    const photoTableBody = document.getElementById('photos-table-body');
+    const photoCount = document.getElementById('photo-count');
+    const closeModal = document.querySelector('.close');
     
     // Application state
     let photos = [];
@@ -33,15 +38,22 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorMessage('Failed to load photos. Please try again later.');
         }
     };
-    
-    // Load photos from the server
+      // Load photos from the server
     const loadPhotos = async () => {
         try {
             const response = await fetch('/api/photos');
             const data = await response.json();
             
             if (data && data.photos && data.photos.length > 0) {
-                photos = data.photos;
+                photos = data.photos.map(photo => ({
+                    ...photo,
+                    id: photo.id,
+                    name: photo.name,
+                    path: photo.path,
+                    date: photo.date,
+                    size: photo.size,
+                    displayCount: photo.displayCount || 0
+                }));
                 console.log(`Loaded ${photos.length} photos`);
                 return photos;
             } else {
@@ -55,8 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return [];
         }
     };
-    
-    // Display a photo by index
+      // Display a photo by index
     const showPhoto = (index) => {
         if (photos.length === 0) return;
         
@@ -85,7 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Show file details
                 const sizeMB = (photo.size / (1024 * 1024)).toFixed(2);
-                photoDetailsEl.textContent = `Size: ${sizeMB} MB`;
+                const displayCount = photo.displayCount !== undefined ? photo.displayCount : 0;
+                photoDetailsEl.textContent = `Size: ${sizeMB} MB | Views: ${displayCount}`;
+                
+                // Update display count in the database if we have a photo ID
+                if (photo.id) {
+                    updatePhotoDisplayCount(photo.id);
+                }
                 
                 // Fade in new image
                 currentPhotoEl.style.opacity = 1;
@@ -207,16 +224,133 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Load and display database photos in the modal
+    const loadDatabasePhotos = async () => {
+        try {
+            statusMessageEl.textContent = 'Loading database photos...';
+            
+            const response = await fetch('/api/photos/database');
+            const data = await response.json();
+            
+            if (data && data.photos) {
+                displayDatabasePhotos(data.photos);
+                showSuccessMessage(`Loaded ${data.photos.length} database photos`);
+            } else {
+                photoTableBody.innerHTML = '<tr><td colspan="8">No photos found in database</td></tr>';
+                showErrorMessage('No photos found in database');
+            }
+        } catch (error) {
+            console.error('Error loading database photos:', error);
+            showErrorMessage('Failed to load database photos');
+            photoTableBody.innerHTML = '<tr><td colspan="8">Error loading database photos</td></tr>';
+        }
+    };
+    
+    // Display database photos in the modal table
+    const displayDatabasePhotos = (dbPhotos) => {
+        photoTableBody.innerHTML = '';
+        photoCount.textContent = `Total: ${dbPhotos.length} photos`;
+        
+        dbPhotos.forEach(photo => {
+            const row = document.createElement('tr');
+            
+            // Format size to MB
+            const sizeMB = photo.nas_size ? (photo.nas_size / (1024 * 1024)).toFixed(2) + ' MB' : 'N/A';
+            
+            // Format date
+            const lastModified = photo.nas_last_modified 
+                ? new Date(photo.nas_last_modified).toLocaleDateString() 
+                : 'N/A';
+            
+            // Check if photo is downloaded
+            const isDownloaded = photo.downloaded_id ? true : false;
+            const downloadedClass = isDownloaded ? 'downloaded-yes' : 'downloaded-no';
+            const downloadedText = isDownloaded ? 'Yes' : 'No';
+              // Create table cells
+            row.innerHTML = `
+                <td>${photo.nas_id || 'N/A'}</td>
+                <td>
+                    <div class="file-info">
+                        <div class="file-name">${photo.nas_filename || 'N/A'}</div>
+                        <div class="file-path">${photo.nas_path || 'N/A'}</div>
+                    </div>
+                </td>
+                <td>${sizeMB}</td>
+                <td>${lastModified}</td>
+                <td class="${downloadedClass}">${downloadedText}</td>
+                <td>${photo.local_path || 'N/A'}</td>
+                <td>${photo.display_count || '0'}</td>
+            `;
+            
+            photoTableBody.appendChild(row);
+        });
+    };
+    
+    // Open the database photos modal
+    const openDatabaseModal = async () => {
+        photoDatabaseModal.style.display = 'block';
+        await loadDatabasePhotos();
+    };
+      // Close the database photos modal
+    const closeDatabaseModal = () => {
+        photoDatabaseModal.style.display = 'none';
+    };
+    
+    // Update the display count for a photo in the database
+    const updatePhotoDisplayCount = async (photoId) => {
+        try {
+            const response = await fetch('/api/photos/viewed', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ photoId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update local display count
+                const photo = photos[currentPhotoIndex];
+                if (photo && photo.id === photoId) {
+                    photo.displayCount = (photo.displayCount || 0) + 1;
+                    
+                    // Update the display in UI
+                    const sizeMB = (photo.size / (1024 * 1024)).toFixed(2);
+                    photoDetailsEl.textContent = `Size: ${sizeMB} MB | Views: ${photo.displayCount}`;
+                }
+            }
+        } catch (error) {
+            console.error('Error updating photo display count:', error);
+        }
+    };
+    
     // Event listeners
     prevButton.addEventListener('click', prevPhoto);
     nextButton.addEventListener('click', nextPhoto);
     scanButton.addEventListener('click', scanNAS);
     fetchButton.addEventListener('click', fetchPhotos);
+    showDatabaseButton.addEventListener('click', openDatabaseModal);
+    closeModal.addEventListener('click', closeDatabaseModal);
+      // Close modal when clicking outside of it
+    window.addEventListener('click', (event) => {
+        if (event.target === photoDatabaseModal) {
+            closeDatabaseModal();
+        }
+    });
     
     // Keyboard navigation
     document.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') prevPhoto();
         if (event.key === 'ArrowRight') nextPhoto();
+        if (event.key === 'Escape' && photoDatabaseModal.style.display === 'block') closeDatabaseModal();
+    });
+    
+    // Refresh the database table when it becomes visible to ensure display counts are up-to-date
+    document.getElementById('show-database-button').addEventListener('click', () => {
+        if (photoDatabaseModal.style.display === 'none' || photoDatabaseModal.style.display === '') {
+            openDatabaseModal();
+        }
     });
     
     // Initialize application

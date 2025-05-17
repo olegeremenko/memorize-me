@@ -26,7 +26,41 @@
             <button id="scan-button">Scan NAS</button>
             <button id="fetch-button">Fetch Photos</button>
             <input type="number" id="fetch-count" min="1" max="100" value="10">
+            <button id="show-database-button">Show All DB Photos</button>
             <span id="status-message"></span>
+        </div>
+    </div>
+    
+    <!-- Modal structure for database photos -->
+    <div id="photo-database-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Photo Database</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-stats">
+                    <span id="photo-count"></span>
+                </div>
+                <div class="table-container">
+                    <table id="photos-table">
+                        <thead>
+                            <tr>
+                                <th>NAS ID</th>
+                                <th>File Info</th>
+                                <th>Size</th>
+                                <th>Last Modified</th>
+                                <th>Downloaded</th>
+                                <th>Local Path</th>
+                                <th>Display Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="photos-table-body">
+                            <!-- Table rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
     

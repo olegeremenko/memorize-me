@@ -9,6 +9,7 @@ A web application that helps users recall memories by displaying photos from a h
 - Shows photo details (name, date, size)
 - Automatically changes photos on a configurable interval
 - Runs efficiently on a Raspberry Pi 3 in a Docker container
+- Supports pattern-based configuration for specific photo directories
 
 ## Project Structure
 
@@ -20,6 +21,7 @@ memorize-me/
 ├── frontend/
 │   └── public/        # Frontend static files
 ├── .env               # Environment configuration
+├── config.json        # Photo subfolder configuration
 ├── package.json       # Project dependencies
 ├── Dockerfile         # Docker configuration
 └── docker-compose.yml # Docker Compose configuration
@@ -33,6 +35,8 @@ memorize-me/
 
 ## Configuration
 
+### Environment Configuration
+
 Edit the `.env` file to configure your application settings:
 
 ```
@@ -44,16 +48,93 @@ HOST=0.0.0.0
 NAS_HOST=192.168.1.100  # Change to your NAS IP address
 NAS_USERNAME=admin      # Change to your NAS username
 NAS_PASSWORD=password   # Change to your NAS password
-NAS_PHOTOS_PATH=/shares/photos  # Change to your photos path on NAS
+
+# Mounted Folder Configuration
+MOUNTED_PHOTOS_PATH=/mnt/nas_photos/__me  # Path to mounted NAS folder
 
 # Local paths
 LOCAL_DB_PATH=./backend/data/photos.db
 LOCAL_PHOTOS_PATH=./backend/data/photos
-PHOTOS_PER_DAY=10  # Number of photos to fetch each day
-
-# Slideshow settings
-SLIDESHOW_INTERVAL=300000  # 5 minutes in milliseconds
 ```
+
+### Photo Directory Configuration
+
+The application supports configuration of specific subdirectories to scan for photos. Edit the `config.json` file:
+
+```json
+{
+  "photoScanConfig": {
+    "subfolders": [
+      {
+        "path": "__2016",
+        "recursive": true
+      },
+      {
+        "path": "family",
+        "recursive": false
+      },
+      "vacations"
+    ],
+    "exclusionPatterns": [
+      "*private*",
+      "*confidential*"
+    ],
+    "imageFileExtensions": [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif"
+    ]
+  }
+}
+```
+
+This configuration allows you to:
+- Specify exact directories to scan with recursive control:
+  - Object format: `{"path": "folder_name", "recursive": true/false}` - Explicitly control recursive scanning
+  - String format: `"folder_name"` - Short syntax, automatically uses recursive scanning
+- Control recursion with the `recursive` flag:
+  - `true` (default): Scan the specified folder and all its subfolders
+  - `false`: Scan only the specified folder, ignoring subfolders
+- Use exclusion patterns to skip certain files or directories that match the specified patterns
+
+#### Exclusion Pattern Syntax
+
+The application uses simple wildcard patterns for exclusions:
+- `*` - matches any number of characters
+- `?` - matches a single character
+
+Examples:
+- `*private*` - Excludes any file or folder with "private" in the name
+- `*confidential*` - Excludes any file or folder with "confidential" in the name
+
+#### Image File Extensions
+
+You can specify which file extensions should be treated as images:
+
+```json
+"imageFileExtensions": [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif"
+]
+```
+
+Only files with these extensions will be included in the photo collection. If not specified, the default extensions (.jpg, .jpeg, .png, .gif) will be used.
+
+### Testing Your Configuration
+
+Run the configuration test:
+
+```bash
+npm run test-config
+```
+
+This will show:
+1. Your current mounted photos path
+2. The subdirectory patterns being used
+3. Results of scanning with your configuration
 
 ## Running with Docker (recommended for Raspberry Pi)
 

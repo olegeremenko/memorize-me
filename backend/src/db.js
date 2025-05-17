@@ -106,7 +106,7 @@ const saveNASPhotos = (photos) => {
         if (err) {
           reject(err);
         } else {
-          resolve({ inserted, total: photos.length });
+          resolve({ inserted, total: photos.length, existing: photos.length - inserted });
         }
       });
     });
@@ -173,11 +173,44 @@ const updatePhotoDisplayed = (photoId) => {
   });
 };
 
+// Get all photos from the database
+const getAllDatabasePhotos = () => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    
+    const query = `
+      SELECT 
+        np.id as nas_id,
+        np.path as nas_path, 
+        np.filename as nas_filename,
+        np.size as nas_size,
+        np.last_modified as nas_last_modified,
+        dp.id as downloaded_id, 
+        dp.local_path as local_path,
+        dp.downloaded_at as downloaded_at,
+        dp.display_count as display_count
+      FROM nas_photos np
+      LEFT JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
+      ORDER BY np.filename
+    `;
+    
+    db.all(query, [], (err, rows) => {
+      db.close();
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
 module.exports = {
   initDatabase,
   getDb,
   saveNASPhotos,
   getRandomNonDownloadedPhotos,
   recordDownloadedPhoto,
-  updatePhotoDisplayed
+  updatePhotoDisplayed,
+  getAllDatabasePhotos
 };

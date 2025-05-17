@@ -3,7 +3,7 @@ const path = require('path');
 const sharp = require('sharp');
 const dotenv = require('dotenv');
 const { getRandomNonDownloadedPhotos, recordDownloadedPhoto } = require('./db');
-const { getNASClient } = require('./nas-service');
+const { getNASClient, clearLocalPhotos } = require('./nas-service');
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +27,10 @@ const resizeImage = async (inputPath, outputPath, width = 1920) => {
 // Fetch random photos from NAS
 const fetchPhotos = async (count = 10) => {
   console.log(`Fetching ${count} random photos...`);
+  
+  // Clear out existing photos
+  console.log('Clearing local photos directory before fetching new photos');
+  await clearLocalPhotos();
   
   // Ensure photos directory exists
   await fs.ensureDir(photosDir);

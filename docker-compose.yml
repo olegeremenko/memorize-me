@@ -8,7 +8,7 @@ services:
     container_name: memorize-me
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3005:3000"
     volumes:
       # Store photos and database on the host machine
       - ./backend/data:/app/backend/data
