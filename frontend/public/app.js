@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Initialization failed:', error);
             showErrorMessage('Failed to load photos. Please try again later.');
+            showNoPhotosMessage(); // Show the logo even when there's an error
         }
     };
       // Load photos from the server
@@ -67,7 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return [];
         }
     };
-      // Display a photo by index
+
+    // Display a photo by index
     const showPhoto = (index) => {
         if (photos.length === 0) return;
         
@@ -86,11 +88,22 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             // Preload image
             const preloadImg = new Image();
+            
             preloadImg.onload = () => {
+                // Set the main photo
                 currentPhotoEl.src = photo.path;
                 currentPhotoEl.alt = photo.name;
                 photoNameEl.textContent = photo.name;
                 
+                // Create or update the blurred background immediately
+                let photoBackground = document.querySelector('.photo-background');
+                if (!photoBackground) {
+                    photoBackground = document.createElement('div');
+                    photoBackground.className = 'photo-background';
+                    document.getElementById('photo-container').prepend(photoBackground);
+                }
+                photoBackground.style.backgroundImage = `url(${photo.path})`;
+
                 const date = new Date(photo.date);
                 photoDateEl.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
                 
@@ -136,11 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showPhoto(currentPhotoIndex + 1);
         // Reset slideshow timer
         startSlideshow();
-    };
-    
-    // Show message when no photos are available
+    };    // Show message when no photos are available
     const showNoPhotosMessage = () => {
-        currentPhotoEl.src = '';
+        currentPhotoEl.src = 'logo.png';
         photoNameEl.textContent = 'No Photos Available';
         photoDateEl.textContent = 'Please use the admin panel to scan your NAS and fetch photos';
         photoDetailsEl.textContent = '';
@@ -206,12 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const data = await response.json();
-            
-            if (data.success) {
+              if (data.success) {
                 showSuccessMessage(`Photos fetched: ${data.result.fetched} of ${data.result.total}`);
                 // Reload photos after fetch
                 await loadPhotos();
-                if (photos.length > 0 && currentPhotoEl.src === '') {
+                if (photos.length > 0 && (currentPhotoEl.src === '' || currentPhotoEl.src.endsWith('logo.png'))) {
                     showPhoto(0);
                     startSlideshow();
                 }
