@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const dotenv = require('dotenv');
 const { saveNASPhotos } = require('./db');
-const { ensureMount, ensureMountAndVerify } = require('./nas-mount-service');
+const { ensureMountAndVerify } = require('./nas-mount-service');
 
 // Load environment variables
 dotenv.config();

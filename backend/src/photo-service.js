@@ -4,7 +4,7 @@ const sharp = require('sharp');
 const dotenv = require('dotenv');
 const { getRandomNonDownloadedPhotos, recordDownloadedPhoto } = require('./db');
 const { getNASClient, clearLocalPhotos } = require('./nas-service');
-const { ensureMount, ensureMountAndVerify } = require('./nas-mount-service');
+const { ensureMountAndVerify } = require('./nas-mount-service');
 
 // Load environment variables
 dotenv.config();
