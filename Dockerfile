@@ -22,12 +22,8 @@ RUN mkdir -p backend/data/photos
 RUN mkdir -p /app/mnt
 
 # Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOST=0.0.0.0
 ENV LOCAL_DB_PATH=/app/backend/data/photos.db
 ENV LOCAL_PHOTOS_PATH=/app/backend/data/photos
-ENV MOUNTED_PHOTOS_PATH=/app/mnt
 
 # Expose port
 EXPOSE 3000
