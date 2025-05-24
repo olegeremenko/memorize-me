@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             statusMessageEl.textContent = 'Loading database photos...';
             
-            const response = await fetch('/api/photos/database');
+            const response = await fetch('/api/stats');
             const data = await response.json();
             
             if (data && data.photos) {

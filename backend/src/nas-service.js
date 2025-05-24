@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const dotenv = require('dotenv');
 const { saveNASPhotos } = require('./db');
+const { ensureMount } = require('./nas-mount-service');
 
 // Load environment variables
 dotenv.config();
@@ -278,11 +279,10 @@ class LocalFolderClient {
 // Create client instance
 const getNASClient = () => {
   return new LocalFolderClient({
-    mountedPath: process.env.MOUNTED_PHOTOS_PATH || '/mnt/photos',
-    // Keep these for backward compatibility
-    host: process.env.NAS_HOST || '192.168.1.100',
-    username: process.env.NAS_USERNAME || 'admin',
-    password: process.env.NAS_PASSWORD || 'password'
+    mountedPath: process.env.MOUNTED_PHOTOS_PATH,
+    host: process.env.NAS_HOST,
+    username: process.env.NAS_USERNAME,
+    password: process.env.NAS_PASSWORD
   });
 };
 
@@ -297,6 +297,9 @@ const scanNAS = async () => {
   console.log('Starting mounted folder scan...');
   
   try {
+    // Ensure NAS is mounted before proceeding
+    await ensureMount();
+
     const client = getNASClient();
     await client.connect();
     
