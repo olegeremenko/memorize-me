@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const dotenv = require('dotenv');
 const { getRandomNonDownloadedPhotos, recordDownloadedPhoto } = require('./db');
 const { getNASClient, clearLocalPhotos } = require('./nas-service');
+const { ensureMount, ensureMountAndVerify } = require('./nas-mount-service');
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,8 @@ const fetchPhotos = async (count = 10) => {
   if (photosToDownload.length === 0) {
     return { fetched: 0, message: 'No new photos to fetch' };
   }
+    // Ensure NAS is mounted and accessible
+  await ensureMountAndVerify();
   
   // Connect to NAS
   const nasClient = getNASClient();

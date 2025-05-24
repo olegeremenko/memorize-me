@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const dotenv = require('dotenv');
 const { saveNASPhotos } = require('./db');
-const { ensureMount } = require('./nas-mount-service');
+const { ensureMount, ensureMountAndVerify } = require('./nas-mount-service');
 
 // Load environment variables
 dotenv.config();
@@ -297,8 +297,8 @@ const scanNAS = async () => {
   console.log('Starting mounted folder scan...');
   
   try {
-    // Ensure NAS is mounted before proceeding
-    await ensureMount();
+    // Ensure NAS is mounted and accessible before proceeding
+    await ensureMountAndVerify();
 
     const client = getNASClient();
     await client.connect();

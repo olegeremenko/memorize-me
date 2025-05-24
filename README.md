@@ -17,6 +17,8 @@ A web application that helps users recall memories by displaying photos from a h
 memorize-me/
 ├── backend/
 │   ├── data/          # Storage for local DB and downloaded photos
+│   │   ├── photos/    # Directory for downloaded photos
+│   │   └── mnt/       # Mount point for NAS resource
 │   └── src/           # Backend Node.js code
 ├── frontend/
 │   └── public/        # Frontend static files
@@ -24,7 +26,7 @@ memorize-me/
 ├── config.json        # Photo subfolder configuration
 ├── package.json       # Project dependencies
 ├── Dockerfile         # Docker configuration
-└── docker-compose.yml # Docker Compose configuration
+└── compose.yml        # Docker Compose configuration
 ```
 
 ## Prerequisites
@@ -50,7 +52,7 @@ NAS_USERNAME=admin      # Change to your NAS username
 NAS_PASSWORD=password   # Change to your NAS password
 
 # Mounted Folder Configuration
-MOUNTED_PHOTOS_PATH=/mnt/nas_photos  # Path to mounted NAS folder
+MOUNTED_PHOTOS_PATH=/app/mnt  # Path to mounted NAS folder inside the container
 
 # Local paths
 LOCAL_DB_PATH=./backend/data/photos.db
@@ -140,13 +142,22 @@ This will show:
 
 1. Clone the repository onto your Raspberry Pi
 2. Edit the `.env` file with your NAS configuration
-3. Build and start the Docker container:
+3. Create the necessary directory structure:
 
 ```bash
-docker-compose up -d
+mkdir -p backend/data/mnt
+mkdir -p backend/data/photos
 ```
 
-4. Access the application at `http://raspberry-pi-ip:3000`
+4. Build and start the Docker container:
+
+```bash
+docker compose up -d
+```
+
+5. Access the application at `http://raspberry-pi-ip:3000`
+
+The application will automatically create and use a directory at `/app/mnt` inside the container for mounting the NAS resource. This directory is mapped to `./backend/data/mnt` on your host system for persistence.
 
 ## Running without Docker (development)
 
