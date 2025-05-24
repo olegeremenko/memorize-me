@@ -1,11 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs-extra');
 const dotenv = require('dotenv');
 const { initDatabase } = require('./db');
-const { scanNAS } = require('./nas-service');
-const { fetchPhotos } = require('./photo-service');
 const photosRoute = require('./routes/photos');
 const adminRoute = require('./routes/admin');
 const statsRoute = require('./routes/stats');
