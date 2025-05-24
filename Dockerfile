@@ -1,11 +1,9 @@
-FROM node:22-slim
+FROM node:20-bullseye
 
 # Install required packages for NAS mounting
-RUN apt-get update && apt-get install -y \
-    cifs-utils \
-    keyutils \
-    dbus \
-    libgssapi-krb5-2 \
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    cifs-utils keyutils dbus libgssapi-krb5-2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
