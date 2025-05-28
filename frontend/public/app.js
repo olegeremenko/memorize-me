@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoDetailsEl = document.getElementById('photo-details');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
+    const fullscreenButton = document.getElementById('fullscreen-button');
     const scanButton = document.getElementById('scan-button');
     const fetchButton = document.getElementById('fetch-button');
     const fetchCountInput = document.getElementById('fetch-count');
@@ -344,13 +345,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Toggle fullscreen mode
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            // Enter fullscreen
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+                fullscreenButton.textContent = "Exit Fullscreen";
+            } else if (document.documentElement.webkitRequestFullscreen) { // Safari
+                document.documentElement.webkitRequestFullscreen();
+                fullscreenButton.textContent = "Exit Fullscreen";
+            } else if (document.documentElement.msRequestFullscreen) { // IE11
+                document.documentElement.msRequestFullscreen();
+                fullscreenButton.textContent = "Exit Fullscreen";
+            }
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                fullscreenButton.textContent = "Fullscreen";
+            } else if (document.webkitExitFullscreen) { // Safari
+                document.webkitExitFullscreen();
+                fullscreenButton.textContent = "Fullscreen";
+            } else if (document.msExitFullscreen) { // IE11
+                document.msExitFullscreen();
+                fullscreenButton.textContent = "Fullscreen";
+            }
+        }
+    };
+    
     // Event listeners
     prevButton.addEventListener('click', prevPhoto);
     nextButton.addEventListener('click', nextPhoto);
+    fullscreenButton.addEventListener('click', toggleFullScreen);
     scanButton.addEventListener('click', scanNAS);
     fetchButton.addEventListener('click', fetchPhotos);
     showDatabaseButton.addEventListener('click', openDatabaseModal);
     closeModal.addEventListener('click', closeDatabaseModal);
+    fullscreenButton.addEventListener('click', toggleFullScreen);
       // Close modal when clicking outside of it
     window.addEventListener('click', (event) => {
         if (event.target === photoDatabaseModal) {
@@ -362,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') prevPhoto();
         if (event.key === 'ArrowRight') nextPhoto();
+        if (event.key === 'f' || event.key === 'F') toggleFullScreen();
         if (event.key === 'Escape' && photoDatabaseModal.style.display === 'block') closeDatabaseModal();
     });
     
@@ -369,6 +402,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('show-database-button').addEventListener('click', () => {
         if (photoDatabaseModal.style.display === 'none' || photoDatabaseModal.style.display === '') {
             openDatabaseModal();
+        }
+    });
+    
+    // Update fullscreen button text when fullscreen state changes
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            fullscreenButton.textContent = "Exit Fullscreen";
+        } else {
+            fullscreenButton.textContent = "Fullscreen";
+        }
+    });
+    
+    // For Safari
+    document.addEventListener('webkitfullscreenchange', () => {
+        if (document.webkitFullscreenElement) {
+            fullscreenButton.textContent = "Exit Fullscreen";
+        } else {
+            fullscreenButton.textContent = "Fullscreen";
         }
     });
     

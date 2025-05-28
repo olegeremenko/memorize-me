@@ -242,6 +242,34 @@ body, html {
     background-color: #333;
 }
 
+/* Fullscreen specific styles */
+:fullscreen .photo-container {
+    width: 100vw;
+    height: 100vh;
+}
+
+:fullscreen .admin-panel {
+    opacity: 0;
+}
+
+:fullscreen .admin-panel:hover {
+    opacity: 1;
+}
+
+/* Webkit fullscreen */
+:-webkit-full-screen .photo-container {
+    width: 100vw;
+    height: 100vh;
+}
+
+:-webkit-full-screen .admin-panel {
+    opacity: 0;
+}
+
+:-webkit-full-screen .admin-panel:hover {
+    opacity: 1;
+}
+
 .downloaded-yes {
     color: #4CAF50;
 }
