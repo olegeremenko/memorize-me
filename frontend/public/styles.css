@@ -66,13 +66,13 @@ body, html {
 
 .photo-info {
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
     width: 100%;
     padding: 20px;
     background: rgba(0, 0, 0, 0.5);
     color: white;
-    transform: translateY(100%);
+    transform: translateY(-100%);
     transition: transform 0.3s ease-in-out;
     z-index: 2;
 }
@@ -83,24 +83,49 @@ body, html {
 
 .controls {
     position: absolute;
-    bottom: 30px;
+    bottom: 50%;
+    width: 100%;
     display: flex;
-    gap: 20px;
+    justify-content: space-between;
+    padding: 0 20px;
     z-index: 10;
 }
 
 .nav-button {
-    padding: 10px 20px;
-    background: rgba(0, 0, 0, 0.5);
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.2);
     color: white;
-    border: 1px solid white;
-    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#prev-button {
+    position: absolute;
+    left: 20px;
+}
+
+#next-button {
+    position: absolute;
+    right: 20px;
+}
+
+.chevron {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .nav-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.8);
 }
 
 .admin-panel {

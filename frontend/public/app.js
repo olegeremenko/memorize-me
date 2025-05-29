@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fullscreenButton = document.getElementById('fullscreen-button');
     const scanButton = document.getElementById('scan-button');
     const fetchButton = document.getElementById('fetch-button');
-    const fetchCountInput = document.getElementById('fetch-count');
     const statusMessageEl = document.getElementById('status-message');
     const showDatabaseButton = document.getElementById('show-database-button');
     const photoDatabaseModal = document.getElementById('photo-database-modal');
@@ -54,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ...photo,
                     id: photo.id,
                     name: photo.name,
+                    originalFileName: photo.originalFileName || photo.name,
                     path: photo.path,
                     date: photo.date,
                     size: photo.size,
@@ -98,8 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
             preloadImg.onload = () => {
                 // Set the main photo
                 currentPhotoEl.src = photo.path;
-                currentPhotoEl.alt = photo.name;
-                photoNameEl.textContent = photo.name;
+                currentPhotoEl.alt = photo.originalFileName || photo.name;
+                photoNameEl.textContent = photo.originalFileName || photo.name;
                 
                 // Create or update the blurred background immediately
                 let photoBackground = document.querySelector('.photo-background');
@@ -109,14 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('photo-container').prepend(photoBackground);
                 }
                 photoBackground.style.backgroundImage = `url(${photo.path})`;
-
-                const date = new Date(photo.date);
-                photoDateEl.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
                 
                 // Show file details
-                const sizeMB = (photo.size / (1024 * 1024)).toFixed(2);
                 const displayCount = photo.displayCount !== undefined ? photo.displayCount : 0;
-                photoDetailsEl.textContent = `Size: ${sizeMB} MB | Views: ${displayCount}`;
+                photoDetailsEl.textContent = `Views: ${displayCount}`;
                 
                 // Update display count in the database if we have a photo ID
                 if (photo.id) {
@@ -159,8 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const showNoPhotosMessage = () => {
         currentPhotoEl.src = 'logo.png';
         photoNameEl.textContent = 'No Photos Available';
-        photoDateEl.textContent = 'Please use the admin panel to scan your NAS and fetch photos';
-        photoDetailsEl.textContent = '';
+        photoDateEl.textContent = ''; // No longer showing date timestamp
+        photoDetailsEl.textContent = 'Please use the admin panel to scan your NAS and fetch photos';
         
         // Hide navigation buttons when no photos are available
         prevButton.style.display = 'none';
@@ -215,15 +211,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch photos from NAS
     const fetchPhotos = async () => {
         try {
-            const count = parseInt(fetchCountInput.value) || 10;
-            statusMessageEl.textContent = `Fetching ${count} photos...`;
+            const defaultCount = 10; // Default number of photos to fetch
+            statusMessageEl.textContent = `Fetching ${defaultCount} photos...`;
             
             const response = await fetch('/api/admin/fetch', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ count })
+                body: JSON.stringify({ count: defaultCount })
             });
             
             const data = await response.json();
@@ -335,9 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (photo && photo.id === photoId) {
                     photo.displayCount = (photo.displayCount || 0) + 1;
                     
-                    // Update the display in UI
-                    const sizeMB = (photo.size / (1024 * 1024)).toFixed(2);
-                    photoDetailsEl.textContent = `Size: ${sizeMB} MB | Views: ${photo.displayCount}`;
+                    photoDetailsEl.textContent = `Views: ${photo.displayCount}`;
                 }
             }
         } catch (error) {

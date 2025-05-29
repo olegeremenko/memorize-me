@@ -25,6 +25,7 @@ router.get('/', async (req, res) => {
         return {
           id: photoId,
           name: file,
+          originalFileName: dbPhoto?.nas_filename || file, // Add original filename from NAS
           path: `/photos/${file}`,
           date: dbPhoto?.nas_last_modified || stats.mtime.toISOString(),
           size: stats.size,
