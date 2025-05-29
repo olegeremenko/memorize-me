@@ -28,8 +28,9 @@ ENV LOCAL_PHOTOS_PATH=/app/backend/data/photos
 # Expose port
 EXPOSE 3000
 
-# Initialize database on start
-RUN node backend/src/init-db.js
+# Copy and set the entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# Start the app
-CMD ["node", "backend/src/index.js"]
+# Use entrypoint script for startup
+CMD ["/app/entrypoint.sh"]
