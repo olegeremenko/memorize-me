@@ -41,8 +41,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/public/index.html'));
 });
 
+// Serve the admin page
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/public/admin.html'));
+});
+
 // Start server
 app.listen(PORT, HOST, () => {
   console.log(`Server running at http://${HOST}:${PORT}`);
   console.log(`Frontend available at http://localhost:${PORT}`);
+  console.log(`Admin panel available at http://localhost:${PORT}/admin`);
 });

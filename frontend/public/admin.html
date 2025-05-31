@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorize Me - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+        }
+        
+        .admin-card {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .admin-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .admin-button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .admin-button {
+            padding: 12px 15px;
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        
+        .admin-button:hover {
+            background: #666;
+        }
+        
+        #status-message {
+            margin-top: 15px;
+            text-align: center;
+            height: 20px;
+            font-size: 14px;
+        }
+        
+        .back-link {
+            margin-top: 20px;
+            color: #aaa;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+        
+        .back-link:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="logo-container">
+            <img src="logo.png" alt="Memorize Me Logo" class="logo">
+        </div>
+        
+        <div class="admin-card">
+            <h1 class="admin-title">Admin Panel</h1>
+            
+            <div class="admin-button-group">
+                <button id="scan-button" class="admin-button">Scan NAS</button>
+                <button id="fetch-button" class="admin-button">Fetch Photos</button>
+                <button id="show-database-button" class="admin-button">Show All DB Photos</button>
+            </div>
+            
+            <div id="status-message"></div>
+            
+            <a href="/" class="back-link">Back to Slideshow</a>
+        </div>
+    </div>
+    
+    <!-- Modal structure for database photos -->
+    <div id="photo-database-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Photo Database</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-stats">
+                    <span id="photo-count"></span>
+                </div>
+                <div class="table-container">
+                    <table id="photos-table">
+                        <thead>
+                            <tr>
+                                <th>NAS ID</th>
+                                <th>File Info</th>
+                                <th>Size</th>
+                                <th>Last Modified</th>
+                                <th>Downloaded</th>
+                                <th>Local Path</th>
+                                <th>Display Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="photos-table-body">
+                            <!-- Table rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="admin.js"></script>
+</body>
+</html>

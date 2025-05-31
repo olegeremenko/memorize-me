@@ -11,7 +11,8 @@
       }
     ],
     "exclusionPatterns": [
-      "*private*"
+      "*private*",
+      "*archive*"
     ],
     "imageFileExtensions": [
       ".jpg",
