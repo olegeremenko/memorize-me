@@ -2,7 +2,6 @@ services:
   memorize-me:
     build: 
       context: .
-      dockerfile: Dockerfile
     container_name: memorize-me
     restart: unless-stopped
     ports:
@@ -23,8 +22,3 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOST=0.0.0.0
-    # Use appropriate memory limits
-    deploy:
-      resources:
-        limits:
-          memory: 512M
