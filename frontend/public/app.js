@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const fullscreenButton = document.getElementById('fullscreen-button');
     const statusMessageEl = document.getElementById('status-message');
     
+    // Add error handler for the image element
+    currentPhotoEl.onerror = () => {
+        // If image fails to load, show the logo
+        if (currentPhotoEl.src !== 'logo.png') {
+            console.log('Error loading photo, showing logo instead');
+            currentPhotoEl.src = 'logo.png';
+            currentPhotoEl.alt = 'Memorize Me Logo';
+        }
+    };
+    
     // Application state
     let photos = [];
     let currentPhotoIndex = 0;
@@ -20,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide navigation buttons initially until we know we have photos
         prevButton.style.display = 'none';
         nextButton.style.display = 'none';
+        
+        // Check if current photo is empty and show logo initially
+        if (!currentPhotoEl.src || currentPhotoEl.src.endsWith('/')) {
+            currentPhotoEl.src = 'logo.png';
+            currentPhotoEl.alt = 'Memorize Me Logo';
+        }
         
         try {
             await loadPhotos();
@@ -88,6 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Preload image
             const preloadImg = new Image();
             
+            preloadImg.onerror = () => {
+                console.error('Failed to load photo:', photo.path);
+                // Show logo instead of the failed photo
+                currentPhotoEl.src = 'logo.png';
+                currentPhotoEl.alt = 'Memorize Me Logo';
+                photoNameEl.textContent = 'Photo Load Error';
+                currentPhotoEl.style.opacity = 1; // Make sure the logo is visible
+            };
+            
             preloadImg.onload = () => {
                 // Set the main photo
                 currentPhotoEl.src = photo.path;
@@ -104,12 +129,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 photoBackground.style.backgroundImage = `url(${photo.path})`;
                 
                 // Show file details
-                const displayCount = photo.displayCount !== undefined ? photo.displayCount : 0;
-                photoDetailsEl.textContent = `Views: ${displayCount}`;
+                const downloadsCount = photo.downloadsCount !== undefined ? photo.downloadsCount : 0;
+                photoDetailsEl.textContent = `Downloads: ${downloadsCount}`;
                 
-                // Update display count in the database if we have a photo ID
+                // Update viewed timestamp in the database if we have a photo ID
                 if (photo.id) {
-                    updatePhotoDisplayCount(photo.id);
+                    updatePhotoViewed(photo.id);
                 }
                 
                 // Fade in new image
@@ -176,8 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     };
     
-    // Update the display count for a photo in the database
-    const updatePhotoDisplayCount = async (photoId) => {
+    // Update viewed timestamp for a photo in the database
+    const updatePhotoViewed = async (photoId) => {
         try {
             const response = await fetch('/api/photos/viewed', {
                 method: 'POST',
@@ -189,17 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            if (data.success) {
-                // Update local display count
-                const photo = photos[currentPhotoIndex];
-                if (photo && photo.id === photoId) {
-                    photo.displayCount = (photo.displayCount || 0) + 1;
-                    
-                    photoDetailsEl.textContent = `Views: ${photo.displayCount}`;
-                }
+            if (!data.success) {
+                console.warn('Failed to update photo viewed timestamp');
             }
         } catch (error) {
-            console.error('Error updating photo display count:', error);
+            console.error('Error updating photo viewed timestamp:', error);
         }
     };
     
@@ -217,18 +236,99 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.documentElement.msRequestFullscreen();
                 fullscreenButton.textContent = "Exit Fullscreen";
             }
-        } else {
-            // Exit fullscreen
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-                fullscreenButton.textContent = "Fullscreen";
-            } else if (document.webkitExitFullscreen) { // Safari
-                document.webkitExitFullscreen();
-                fullscreenButton.textContent = "Fullscreen";
-            } else if (document.msExitFullscreen) { // IE11
-                document.msExitFullscreen();
-                fullscreenButton.textContent = "Fullscreen";
+        }
+    }
+
+    // Download the current photo
+    const downloadCurrentPhoto = async () => {
+        const photo = photos[currentPhotoIndex];
+        if (photo && photo.id) {
+            try {
+                // We use window.location to trigger the browser download
+                window.open(`/api/photos/download/${photo.id}`, '_blank');
+                
+                // Update local downloads count after a short delay to give API time to process
+                setTimeout(() => {
+                    // Refresh the current photo information to get updated download count
+                    loadPhotos().then(() => {
+                        const updatedPhoto = photos.find(p => p.id === photo.id);
+                        if (updatedPhoto) {
+                            photoDetailsEl.textContent = `Downloads: ${updatedPhoto.downloadsCount || 0}`;
+                        }
+                    });
+                }, 1000);
+            } catch (error) {
+                console.error('Error downloading photo:', error);
             }
+        } else {
+            console.warn('No photo available to download');
+        }
+    };
+    
+    // Delete modal elements
+    const deleteModal = document.getElementById('delete-modal');
+    const closeButton = deleteModal.querySelector('.close');
+    const cancelDeleteButton = document.getElementById('cancel-delete');
+    const confirmDeleteButton = document.getElementById('confirm-delete');
+    
+    // Show delete confirmation modal
+    const showDeleteModal = () => {
+        const photo = photos[currentPhotoIndex];
+        if (photo && photo.id) {
+            deleteModal.style.display = 'block';
+        } else {
+            showErrorMessage('No photo selected to delete');
+        }
+    };
+    
+    // Close delete modal
+    const closeDeleteModal = () => {
+        deleteModal.style.display = 'none';
+    };
+    
+    // Delete the current photo
+    const deleteCurrentPhoto = async () => {
+        const photo = photos[currentPhotoIndex];
+        if (photo && photo.id) {
+            try {
+                const response = await fetch(`/api/photos/delete/${photo.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccessMessage('Photo deleted successfully');
+                    
+                    // Remove the photo from the array
+                    photos = photos.filter(p => p.id !== photo.id);
+                    
+                    // Show the next photo if available, or the previous one if this was the last
+                    if (photos.length > 0) {
+                        // If we're at the end of the array, go to the previous photo
+                        if (currentPhotoIndex >= photos.length) {
+                            showPhoto(currentPhotoIndex - 1);
+                        } else {
+                            showPhoto(currentPhotoIndex);
+                        }
+                    } else {
+                        showNoPhotosMessage();
+                    }
+                } else {
+                    showErrorMessage('Failed to delete photo: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting photo:', error);
+                showErrorMessage('Failed to communicate with server');
+            } finally {
+                closeDeleteModal();
+            }
+        } else {
+            showErrorMessage('No photo selected to delete');
+            closeDeleteModal();
         }
     };
     
@@ -236,12 +336,36 @@ document.addEventListener('DOMContentLoaded', () => {
     prevButton.addEventListener('click', prevPhoto);
     nextButton.addEventListener('click', nextPhoto);
     fullscreenButton.addEventListener('click', toggleFullScreen);
+    document.getElementById('download-button').addEventListener('click', downloadCurrentPhoto);
+    document.getElementById('delete-button').addEventListener('click', showDeleteModal);
+    
+    // Delete modal event listeners
+    closeButton.addEventListener('click', closeDeleteModal);
+    cancelDeleteButton.addEventListener('click', closeDeleteModal);
+    confirmDeleteButton.addEventListener('click', deleteCurrentPhoto);
+    
+    // Close modal when clicking outside of it
+    window.addEventListener('click', (event) => {
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+    });
+    document.getElementById('delete-button').addEventListener('click', showDeleteModal);
+    closeButton.addEventListener('click', closeDeleteModal);
+    cancelDeleteButton.addEventListener('click', closeDeleteModal);
+    confirmDeleteButton.addEventListener('click', deleteCurrentPhoto);
     
     // Keyboard navigation
     document.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') prevPhoto();
         if (event.key === 'ArrowRight') nextPhoto();
         if (event.key === 'f' || event.key === 'F') toggleFullScreen();
+        if (event.key === 'd' || event.key === 'D' || event.key === 'Delete' || event.key === 'Backspace') showDeleteModal();
+        
+        // Close delete modal with Escape key
+        if (event.key === 'Escape' && deleteModal.style.display === 'block') {
+            closeDeleteModal();
+        }
     });
     
     // Update fullscreen button text when fullscreen state changes

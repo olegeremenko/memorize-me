@@ -42,8 +42,7 @@ const initDatabase = async () => {
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        
-        // Table for downloaded photos
+          // Table for downloaded photos
         db.run(`
           CREATE TABLE IF NOT EXISTS downloaded_photos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +50,8 @@ const initDatabase = async () => {
             local_path TEXT NOT NULL,
             downloaded_at TEXT DEFAULT CURRENT_TIMESTAMP,
             last_displayed TEXT,
-            display_count INTEGER DEFAULT 0,
+            downloads_count INTEGER DEFAULT 0,
+            deleted_at TEXT DEFAULT NULL,
             FOREIGN KEY (nas_photo_id) REFERENCES nas_photos (id)
           )
         `, (err) => {
@@ -137,12 +137,12 @@ const getRandomNonDownloadedPhotos = (count) => {
   });
 };
 
-// Record downloaded photo
+// Record downloaded photo (initializes downloads_count to 1)
 const recordDownloadedPhoto = (nasPhotoId, localPath) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
     
-    const query = 'INSERT INTO downloaded_photos (nas_photo_id, local_path) VALUES (?, ?)';
+    const query = 'INSERT INTO downloaded_photos (nas_photo_id, local_path, downloads_count) VALUES (?, ?, 1)';
     
     db.run(query, [nasPhotoId, localPath], function(err) {
       db.close();
@@ -160,7 +160,43 @@ const updatePhotoDisplayed = (photoId) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
     
-    const query = 'UPDATE downloaded_photos SET last_displayed = CURRENT_TIMESTAMP, display_count = display_count + 1 WHERE id = ?';
+    const query = 'UPDATE downloaded_photos SET last_displayed = CURRENT_TIMESTAMP WHERE id = ?';
+    
+    db.run(query, [photoId], function(err) {
+      db.close();
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ updated: this.changes > 0 });
+      }
+    });
+  });
+};
+
+// Update photo download stats
+const incrementPhotoDownloads = (photoId) => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    
+    const query = 'UPDATE downloaded_photos SET downloads_count = downloads_count + 1 WHERE id = ?';
+    
+    db.run(query, [photoId], function(err) {
+      db.close();
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ updated: this.changes > 0 });
+      }
+    });
+  });
+};
+
+// Mark a photo as deleted (soft delete)
+const markPhotoAsDeleted = (photoId) => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    
+    const query = 'UPDATE downloaded_photos SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?';
     
     db.run(query, [photoId], function(err) {
       db.close();
@@ -177,8 +213,7 @@ const updatePhotoDisplayed = (photoId) => {
 const getAllDatabasePhotos = () => {
   return new Promise((resolve, reject) => {
     const db = getDb();
-    
-    const query = `
+      const query = `
       SELECT 
         np.id as nas_id,
         np.path as nas_path, 
@@ -188,7 +223,8 @@ const getAllDatabasePhotos = () => {
         dp.id as downloaded_id, 
         dp.local_path as local_path,
         dp.downloaded_at as downloaded_at,
-        dp.display_count as display_count
+        dp.downloads_count as downloads_count,
+        dp.deleted_at as deleted_at
       FROM nas_photos np
       LEFT JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
       ORDER BY np.filename
@@ -205,6 +241,35 @@ const getAllDatabasePhotos = () => {
   });
 };
 
+// Get statistics for the admin dashboard
+const getPhotoStats = () => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    const query = `
+      SELECT 
+        (SELECT COUNT(*) FROM nas_photos) as total_photos,
+        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
+        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
+        (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
+      FROM nas_photos LIMIT 1
+    `;
+    
+    db.get(query, [], (err, stats) => {
+      db.close();
+      if (err) {
+        reject(err);
+      } else {
+        resolve(stats || {
+          total_photos: 0,
+          active_photos: 0,
+          deleted_photos: 0,
+          last_scan_time: null
+        });
+      }
+    });
+  });
+};
+
 module.exports = {
   initDatabase,
   getDb,
@@ -212,5 +277,8 @@ module.exports = {
   getRandomNonDownloadedPhotos,
   recordDownloadedPhoto,
   updatePhotoDisplayed,
-  getAllDatabasePhotos
+  incrementPhotoDownloads,
+  markPhotoAsDeleted,
+  getAllDatabasePhotos,
+  getPhotoStats
 };

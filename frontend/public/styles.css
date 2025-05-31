@@ -272,6 +272,36 @@ body, html {
     background-color: #333;
 }
 
+/* Modal buttons */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-button {
+    padding: 8px 16px;
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modal-button:hover {
+    background: #666;
+}
+
+.modal-button.confirm {
+    background: #f44336;
+}
+
+.modal-button.confirm:hover {
+    background: #d32f2f;
+}
+
 /* Fullscreen specific styles */
 :fullscreen .photo-container {
     width: 100vw;

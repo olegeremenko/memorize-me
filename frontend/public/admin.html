@@ -79,6 +79,44 @@
         .back-link:hover {
             color: #fff;
         }
+
+        .stats-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+        }
+        
+        .stats-title {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            color: #ddd;
+        }
+        
+        .stats-item {
+            padding: 10px;
+            background: rgba(50, 50, 50, 0.5);
+            border-radius: 5px;
+        }
+        
+        .stats-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .stats-value {
+            font-size: 18px;
+            font-weight: 500;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +127,29 @@
         
         <div class="admin-card">
             <h1 class="admin-title">Admin Panel</h1>
+            
+            <!-- Stats Section -->
+            <div class="stats-container">
+                <h2 class="stats-title">Dashboard Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stats-item">
+                        <div class="stats-label">Total Photos in Database:</div>
+                        <div class="stats-value" id="stats-total-photos">Loading...</div>
+                    </div>
+                    <div class="stats-item">
+                        <div class="stats-label">Last Scan Time:</div>
+                        <div class="stats-value" id="stats-last-scan">Loading...</div>
+                    </div>
+                    <div class="stats-item">
+                        <div class="stats-label">Active Photos:</div>
+                        <div class="stats-value" id="stats-active-photos">Loading...</div>
+                    </div>
+                    <div class="stats-item">
+                        <div class="stats-label">Soft-Deleted Photos:</div>
+                        <div class="stats-value" id="stats-deleted-photos">Loading...</div>
+                    </div>
+                </div>
+            </div>
             
             <div class="admin-button-group">
                 <button id="scan-button" class="admin-button">Scan NAS</button>
@@ -123,7 +184,7 @@
                                 <th>Last Modified</th>
                                 <th>Downloaded</th>
                                 <th>Local Path</th>
-                                <th>Display Count</th>
+                                <th>Downloads Count</th>
                             </tr>
                         </thead>
                         <tbody id="photos-table-body">

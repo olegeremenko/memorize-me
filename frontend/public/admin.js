@@ -10,6 +10,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoCount = document.getElementById('photo-count');
     const closeModal = document.querySelector('.close');
     
+    // Stats elements
+    const statsTotalPhotos = document.getElementById('stats-total-photos');
+    const statsLastScan = document.getElementById('stats-last-scan');
+    const statsActivePhotos = document.getElementById('stats-active-photos');
+    const statsDeletedPhotos = document.getElementById('stats-deleted-photos');
+    
+    // Load the statistics when the page loads
+    loadPhotoStats();
+    
+    // Function to load and display photo statistics
+    async function loadPhotoStats() {
+        try {
+            const response = await fetch('/api/stats/stats');
+            const data = await response.json();
+            
+            if (data && data.stats) {
+                const stats = data.stats;
+                
+                // Format the last scan time
+                const lastScanTime = stats.last_scan_time 
+                    ? new Date(stats.last_scan_time).toLocaleString()
+                    : 'Never';
+                
+                // Update the DOM elements
+                statsTotalPhotos.textContent = stats.total_photos || 0;
+                statsLastScan.textContent = lastScanTime;
+                statsActivePhotos.textContent = stats.active_photos || 0;
+                statsDeletedPhotos.textContent = stats.deleted_photos || 0;
+            } else {
+                // Set default values if no stats were returned
+                statsTotalPhotos.textContent = '0';
+                statsLastScan.textContent = 'Never';
+                statsActivePhotos.textContent = '0';
+                statsDeletedPhotos.textContent = '0';
+            }
+        } catch (error) {
+            console.error('Error loading photo stats:', error);
+            // Set error state
+            statsTotalPhotos.textContent = 'Error';
+            statsLastScan.textContent = 'Error';
+            statsActivePhotos.textContent = 'Error';
+            statsDeletedPhotos.textContent = 'Error';
+        }
+    }
+    
     // Show error message
     const showErrorMessage = (message) => {
         statusMessageEl.textContent = message;
@@ -46,6 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.success) {
                 showSuccessMessage(`NAS scan completed: ${data.result.inserted} new photos found`);
+                // Reload stats after scanning
+                loadPhotoStats();
             } else {
                 showErrorMessage('NAS scan failed: ' + (data.error || 'Unknown error'));
             }
@@ -73,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.success) {
                 showSuccessMessage(`Photos fetched: ${data.result.fetched} of ${data.result.total}`);
+                // Reload stats after fetching
+                loadPhotoStats();
             } else {
                 showErrorMessage('Photo fetch failed: ' + (data.error || 'Unknown error'));
             }
@@ -138,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${lastModified}</td>
                 <td class="${downloadedClass}">${downloadedText}</td>
                 <td>${photo.local_path || 'N/A'}</td>
-                <td>${photo.display_count || '0'}</td>
+                <td>${photo.downloads_count || '0'}</td>
             `;
             
             photoTableBody.appendChild(row);
