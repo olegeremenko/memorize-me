@@ -243,30 +243,61 @@ const getAllDatabasePhotos = () => {
 
 // Get statistics for the admin dashboard
 const getPhotoStats = () => {
-  return new Promise((resolve, reject) => {
-    const db = getDb();
-    const query = `
-      SELECT 
-        (SELECT COUNT(*) FROM nas_photos) as total_photos,
-        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
-        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
-        (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
-      FROM nas_photos LIMIT 1
-    `;
-    
-    db.get(query, [], (err, stats) => {
-      db.close();
-      if (err) {
-        reject(err);
-      } else {
-        resolve(stats || {
-          total_photos: 0,
-          active_photos: 0,
-          deleted_photos: 0,
-          last_scan_time: null
+  return new Promise(async (resolve, reject) => {
+    try {
+      const db = getDb();
+      const query = `
+        SELECT 
+          (SELECT COUNT(*) FROM nas_photos) as total_photos,
+          (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
+          (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
+          (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
+        FROM nas_photos LIMIT 1
+      `;
+      
+      // Get database stats
+      const dbStats = await new Promise((res, rej) => {
+        db.get(query, [], (err, stats) => {
+          db.close();
+          if (err) {
+            rej(err);
+          } else {
+            res(stats || {
+              total_photos: 0,
+              active_photos: 0,
+              deleted_photos: 0,
+              last_scan_time: null
+            });
+          }
         });
-      }
-    });
+      });
+      
+      // Count actual files in photos directory
+      const filesCount = await getLocalPhotoCount();
+      
+      // Combine stats
+      resolve({
+        ...dbStats,
+        local_photos_count: filesCount
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+// Count the number of image files in the local photos directory
+const getLocalPhotoCount = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await fs.ensureDir(photosDir);
+      const files = await fs.readdir(photosDir);
+      const imageFileCount = files.filter(file => /\.(jpg|jpeg|png|gif)$/i.test(file)).length;
+      resolve(imageFileCount);
+    } catch (err) {
+      console.error('Error counting local photos:', err);
+      reject(err);
+    }
   });
 };
 
@@ -280,5 +311,6 @@ module.exports = {
   incrementPhotoDownloads,
   markPhotoAsDeleted,
   getAllDatabasePhotos,
-  getPhotoStats
+  getPhotoStats,
+  getLocalPhotoCount
 };

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stats elements
     const statsTotalPhotos = document.getElementById('stats-total-photos');
     const statsLastScan = document.getElementById('stats-last-scan');
-    const statsActivePhotos = document.getElementById('stats-active-photos');
+    const statsLocalPhotos = document.getElementById('stats-local-photos');
     const statsDeletedPhotos = document.getElementById('stats-deleted-photos');
     
     // Load the statistics when the page loads
@@ -36,13 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update the DOM elements
                 statsTotalPhotos.textContent = stats.total_photos || 0;
                 statsLastScan.textContent = lastScanTime;
-                statsActivePhotos.textContent = stats.active_photos || 0;
+                statsLocalPhotos.textContent = stats.local_photos_count || 0;
                 statsDeletedPhotos.textContent = stats.deleted_photos || 0;
             } else {
                 // Set default values if no stats were returned
                 statsTotalPhotos.textContent = '0';
                 statsLastScan.textContent = 'Never';
-                statsActivePhotos.textContent = '0';
+                statsLocalPhotos.textContent = '0';
                 statsDeletedPhotos.textContent = '0';
             }
         } catch (error) {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Set error state
             statsTotalPhotos.textContent = 'Error';
             statsLastScan.textContent = 'Error';
-            statsActivePhotos.textContent = 'Error';
+            statsLocalPhotos.textContent = 'Error';
             statsDeletedPhotos.textContent = 'Error';
         }
     }
