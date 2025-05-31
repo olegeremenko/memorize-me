@@ -5,6 +5,30 @@ const { getAllDatabasePhotos, updatePhotoDisplayed, incrementPhotoDownloads, mar
 
 const router = express.Router();
 
+// Helper function to calculate relative time
+function getRelativeTimeString(date) {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  const intervals = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60
+  };
+  
+  for (const [unit, seconds] of Object.entries(intervals)) {
+    const interval = Math.floor(diffInSeconds / seconds);
+    if (interval >= 1) {
+      return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+    }
+  }
+  
+  return 'just now';
+}
+
 router.get('/', async (req, res) => {
   try {
     const photosDir = process.env.LOCAL_PHOTOS_PATH || path.join(__dirname, '../../data/photos');
@@ -22,16 +46,32 @@ router.get('/', async (req, res) => {
         const dbPhoto = dbPhotos.find(p => p.local_path === file);
         const photoId = dbPhoto ? dbPhoto.downloaded_id : null;
         const isDeleted = dbPhoto ? dbPhoto.deleted_at !== null : false;
+        const originalFileName = dbPhoto ? dbPhoto.nas_filename : file;
+        
+        // Parse timestamp from filename if it matches the pattern YYYY-MM-DD_HH-MM-SS.ext
+        let relativeTime = null;
+        // Extract the base filename without extension
+        const baseName = originalFileName.replace(/\.[^/.]+$/, "");
+        const timestampMatch = baseName.match(/^(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})/);
+        if (timestampMatch) {
+          // Convert the date format from YYYY-MM-DD_HH-MM-SS to YYYY-MM-DDTHH:MM:SS
+          const dateStr = `${timestampMatch[1]}T${timestampMatch[2].replace(/-/g, ':')}`;
+          const timestamp = new Date(dateStr);
+          if (!isNaN(timestamp)) {
+            relativeTime = getRelativeTimeString(timestamp);
+          }
+        }
 
         return {
           id: photoId,
           name: file,
-          originalFileName: dbPhoto?.nas_filename || file, // Add original filename from NAS
+          originalFileName: originalFileName, // Add original filename from NAS
           path: `/photos/${file}`,
           date: dbPhoto?.nas_last_modified || stats.mtime.toISOString(),
           size: stats.size,
           downloadsCount: dbPhoto ? dbPhoto.downloads_count || 0 : 0,
-          isDeleted: isDeleted
+          isDeleted: isDeleted,
+          relativeTime: relativeTime
         };
       })
       // Filter out deleted photos

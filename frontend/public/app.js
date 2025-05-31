@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load system settings from the API
     const loadSystemSettings = async () => {
         try {
-            const response = await fetch('/api/stats/settings');
+            const response = await fetch('/api/settings');
             const data = await response.json();
             
             if (data && data.settings && data.settings.slideshowInterval) {
@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     originalFileName: photo.originalFileName || photo.name,
                     path: photo.path,
                     date: photo.date,
+                    relativeTime: photo.relativeTime,
                     size: photo.size,
                     displayCount: photo.displayCount || 0
                 }));
@@ -153,7 +154,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Show file details
                 const downloadsCount = photo.downloadsCount !== undefined ? photo.downloadsCount : 0;
-                photoDetailsEl.textContent = `Downloads: ${downloadsCount}`;
+                photoDetailsEl.textContent = `Views: ${downloadsCount}`;
+                
+                // Display relative time if available
+                if (photo.relativeTime) {
+                    photoDateEl.textContent = photo.relativeTime;
+                } else if (photo.date) {
+                    // Format the date if relativeTime is not available
+                    const photoDate = new Date(photo.date);
+                    photoDateEl.textContent = photoDate.toLocaleDateString();
+                } else {
+                    photoDateEl.textContent = '';
+                }
                 
                 // Update viewed timestamp in the database if we have a photo ID
                 if (photo.id) {
@@ -196,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showNoPhotosMessage = () => {
         currentPhotoEl.src = 'logo.png';
         photoNameEl.textContent = 'No Photos Available';
-        photoDateEl.textContent = ''; // No longer showing date timestamp
+        photoDateEl.textContent = ''; // Clear date element
         photoDetailsEl.textContent = 'Please use the admin panel to scan your NAS and fetch photos';
         
         // Hide navigation buttons when no photos are available

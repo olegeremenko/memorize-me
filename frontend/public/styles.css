@@ -77,6 +77,13 @@ body, html {
     z-index: 2;
 }
 
+#photo-date {
+    color: #cccccc;
+    font-style: italic;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
 .photo-container:hover .photo-info {
     transform: translateY(0);
 }
