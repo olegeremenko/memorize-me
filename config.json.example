@@ -1,0 +1,23 @@
+{
+  "photoScanConfig": {
+    "subfolders": [
+      {
+        "path": "Mobile",
+        "recursive": false
+      },
+      {
+        "path": "2023",
+        "recursive": true
+      }
+    ],
+    "exclusionPatterns": [
+      "*private*"
+    ],
+    "imageFileExtensions": [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif"
+    ]
+  }
+}
