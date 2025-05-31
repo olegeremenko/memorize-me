@@ -5,120 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memorize Me - Admin Panel</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .admin-container {
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #000;
-        }
-
-        .logo-container {
-            margin-bottom: 30px;
-        }
-        
-        .logo {
-            max-width: 250px;
-            height: auto;
-        }
-        
-        .admin-card {
-            background: rgba(30, 30, 30, 0.9);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            max-width: 500px;
-            width: 100%;
-        }
-        
-        .admin-title {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #fff;
-        }
-        
-        .admin-button-group {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .admin-button {
-            padding: 12px 15px;
-            background: #444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s ease;
-        }
-        
-        .admin-button:hover {
-            background: #666;
-        }
-        
-        #status-message {
-            margin-top: 15px;
-            text-align: center;
-            height: 20px;
-            font-size: 14px;
-        }
-        
-        .back-link {
-            margin-top: 20px;
-            color: #aaa;
-            text-decoration: none;
-            text-align: center;
-            display: block;
-        }
-        
-        .back-link:hover {
-            color: #fff;
-        }
-
-        .stats-container {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-        }
-        
-        .stats-title {
-            color: #fff;
-            font-size: 18px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            color: #ddd;
-        }
-        
-        .stats-item {
-            padding: 10px;
-            background: rgba(50, 50, 50, 0.5);
-            border-radius: 5px;
-        }
-        
-        .stats-label {
-            font-size: 14px;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-        
-        .stats-value {
-            font-size: 18px;
-            font-weight: 500;
-            color: #fff;
-        }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="admin-container">
@@ -150,6 +37,26 @@
                         <div class="stats-value" id="stats-deleted-photos">Loading...</div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- System Settings Section -->
+            <div class="settings-container">
+                <h2 class="settings-title">System Settings</h2>
+                <div class="settings-grid">
+                    <div class="settings-item">
+                        <div class="settings-label">Slideshow Interval (seconds):</div>
+                        <div class="settings-value">
+                            <input type="number" id="slideshow-interval" min="5" step="5">
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-label">Photos Per Day:</div>
+                        <div class="settings-value">
+                            <input type="number" id="photos-per-day" min="1" max="100">
+                        </div>
+                    </div>
+                </div>
+                <button id="save-settings-button" class="admin-button">Save Settings</button>
             </div>
             
             <div class="admin-button-group">

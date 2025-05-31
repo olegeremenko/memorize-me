@@ -24,12 +24,35 @@ document.addEventListener('DOMContentLoaded', () => {
     let photos = [];
     let currentPhotoIndex = 0;
     let slideshowInterval = null;
-    const SLIDESHOW_INTERVAL = parseInt(localStorage.getItem('slideshow-interval')) || 300000; // 5 minutes default
-      // Initialize the application
+    let SLIDESHOW_INTERVAL = parseInt(localStorage.getItem('slideshow-interval')) || 300000; // 5 minutes default
+    
+    // Load system settings from the API
+    const loadSystemSettings = async () => {
+        try {
+            const response = await fetch('/api/stats/settings');
+            const data = await response.json();
+            
+            if (data && data.settings && data.settings.slideshowInterval) {
+                // Convert seconds to milliseconds
+                const intervalMs = data.settings.slideshowInterval * 1000;
+                SLIDESHOW_INTERVAL = intervalMs;
+                localStorage.setItem('slideshow-interval', intervalMs);
+                console.log(`Loaded slideshow interval from settings: ${data.settings.slideshowInterval} seconds`);
+            }
+        } catch (error) {
+            console.error('Error loading system settings:', error);
+            // Use default or localStorage value on error
+        }
+    };
+    
+    // Initialize the application
     const init = async () => {
         // Hide navigation buttons initially until we know we have photos
         prevButton.style.display = 'none';
         nextButton.style.display = 'none';
+        
+        // Load system settings
+        await loadSystemSettings();
         
         // Check if current photo is empty and show logo initially
         if (!currentPhotoEl.src || currentPhotoEl.src.endsWith('/')) {

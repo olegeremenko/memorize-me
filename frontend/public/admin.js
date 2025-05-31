@@ -16,8 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsLocalPhotos = document.getElementById('stats-local-photos');
     const statsDeletedPhotos = document.getElementById('stats-deleted-photos');
     
-    // Load the statistics when the page loads
+    // Settings elements
+    const slideshowIntervalInput = document.getElementById('slideshow-interval');
+    const photosPerDayInput = document.getElementById('photos-per-day');
+    const saveSettingsButton = document.getElementById('save-settings-button');
+    
+    // Load the statistics and settings when the page loads
     loadPhotoStats();
+    loadSettings();
     
     // Function to load and display photo statistics
     async function loadPhotoStats() {
@@ -105,15 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch photos from NAS
     const fetchPhotos = async () => {
         try {
-            const defaultCount = 10; // Default number of photos to fetch
-            statusMessageEl.textContent = `Fetching ${defaultCount} photos...`;
+            // Use the value from the settings input field
+            const count = parseInt(photosPerDayInput.value) || 10;
+            statusMessageEl.textContent = `Fetching ${count} photos...`;
             
             const response = await fetch('/api/admin/fetch', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ count: defaultCount })
+                body: JSON.stringify({ count: count })
             });
             
             const data = await response.json();
@@ -205,9 +212,76 @@ document.addEventListener('DOMContentLoaded', () => {
         photoDatabaseModal.style.display = 'none';
     };
     
+    // Function to load system settings
+    async function loadSettings() {
+        try {
+            const response = await fetch('/api/settings');
+            const data = await response.json();
+            
+            if (data && data.settings) {
+                const settings = data.settings;
+                
+                // Update the input fields
+                slideshowIntervalInput.value = settings.slideshowInterval || 300;
+                photosPerDayInput.value = settings.photosPerDay || 10;
+            } else {
+                // Set default values if no settings were returned
+                slideshowIntervalInput.value = 300;
+                photosPerDayInput.value = 10;
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            showErrorMessage('Failed to load system settings');
+        }
+    }
+    
+    // Function to save system settings
+    async function saveSettings() {
+        try {
+            statusMessageEl.textContent = 'Saving settings...';
+            
+            const slideshowInterval = parseInt(slideshowIntervalInput.value);
+            const photosPerDay = parseInt(photosPerDayInput.value);
+            
+            // Basic validation
+            if (isNaN(slideshowInterval) || slideshowInterval < 5) {
+                showErrorMessage('Slideshow interval must be at least 5 seconds');
+                return;
+            }
+            
+            if (isNaN(photosPerDay) || photosPerDay < 1 || photosPerDay > 100) {
+                showErrorMessage('Photos per day must be between 1 and 100');
+                return;
+            }
+            
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ slideshowInterval, photosPerDay })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showSuccessMessage('Settings saved successfully');
+                
+                // Update local storage for slideshow interval (used by app.js)
+                localStorage.setItem('slideshow-interval', slideshowInterval * 1000);
+            } else {
+                showErrorMessage('Failed to save settings: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            showErrorMessage('Failed to save settings');
+        }
+    }
+    
     // Event listeners
     scanButton.addEventListener('click', scanNAS);
     fetchButton.addEventListener('click', fetchPhotos);
+    saveSettingsButton.addEventListener('click', saveSettings);
     showDatabaseButton.addEventListener('click', openDatabaseModal);
     closeModal.addEventListener('click', closeDatabaseModal);
     

@@ -6,6 +6,7 @@ const { initDatabase } = require('./db');
 const photosRoute = require('./routes/photos');
 const adminRoute = require('./routes/admin');
 const statsRoute = require('./routes/stats');
+const settingsRoute = require('./routes/settings');
 const setupSchedule = require('./schedule');
 
 // Load environment variables
@@ -32,6 +33,7 @@ initDatabase()
 app.use('/api/photos', photosRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/stats', statsRoute);
+app.use('/api/settings', settingsRoute);
 
 // Schedule daily photo fetching at midnight
 setupSchedule();
