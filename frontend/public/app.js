@@ -239,32 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Download the current photo
-    const downloadCurrentPhoto = async () => {
-        const photo = photos[currentPhotoIndex];
-        if (photo && photo.id) {
-            try {
-                // We use window.location to trigger the browser download
-                window.open(`/api/photos/download/${photo.id}`, '_blank');
-                
-                // Update local downloads count after a short delay to give API time to process
-                setTimeout(() => {
-                    // Refresh the current photo information to get updated download count
-                    loadPhotos().then(() => {
-                        const updatedPhoto = photos.find(p => p.id === photo.id);
-                        if (updatedPhoto) {
-                            photoDetailsEl.textContent = `Downloads: ${updatedPhoto.downloadsCount || 0}`;
-                        }
-                    });
-                }, 1000);
-            } catch (error) {
-                console.error('Error downloading photo:', error);
-            }
-        } else {
-            console.warn('No photo available to download');
-        }
-    };
-    
     // Delete modal elements
     const deleteModal = document.getElementById('delete-modal');
     const closeButton = deleteModal.querySelector('.close');
@@ -336,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
     prevButton.addEventListener('click', prevPhoto);
     nextButton.addEventListener('click', nextPhoto);
     fullscreenButton.addEventListener('click', toggleFullScreen);
-    document.getElementById('download-button').addEventListener('click', downloadCurrentPhoto);
     document.getElementById('delete-button').addEventListener('click', showDeleteModal);
     
     // Delete modal event listeners
