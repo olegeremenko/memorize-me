@@ -22,7 +22,7 @@
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    max-width: 500px;
+    max-width: 600px;
     width: 100%;
 }
 
@@ -32,10 +32,42 @@
     color: #fff;
 }
 
+/* Tab Navigation Styles */
+.tab-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #444;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px 0;
+    background: transparent;
+    color: #aaa;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    color: #fff;
+}
+
+.tab-button.active {
+    color: #fff;
+    border-bottom: 3px solid #fff;
+}
+
+.tab-content {
+    display: none;
+}
+
 .admin-button-group {
     margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #444;
+    padding-top: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -56,11 +88,13 @@
     background: #666;
 }
 
-#status-message {
+.status-message {
     margin-top: 15px;
+    padding-top: 15px;
     text-align: center;
-    height: 20px;
+    min-height: 20px;
     font-size: 14px;
+    border-top: 1px solid #444;
 }
 
 .back-link {
@@ -77,8 +111,7 @@
 
 .stats-container {
     margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #444;
+    padding-top: 10px;
 }
 
 .stats-title {
@@ -116,8 +149,7 @@
 /* Settings Styles */
 .settings-container {
     margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #444;
+    padding-top: 10px;
 }
 
 .settings-title {

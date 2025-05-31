@@ -21,6 +21,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const photosPerDayInput = document.getElementById('photos-per-day');
     const saveSettingsButton = document.getElementById('save-settings-button');
     
+    // Tab Navigation
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Initialize tab functionality
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Hide all tab contents
+            tabContents.forEach(content => content.style.display = 'none');
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            // Show corresponding tab content
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(`${tabId}-tab`).style.display = 'block';
+        });
+    });
+    
     // Load the statistics and settings when the page loads
     loadPhotoStats();
     loadSettings();

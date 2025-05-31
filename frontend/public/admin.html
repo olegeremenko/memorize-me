@@ -16,56 +16,71 @@
         <div class="admin-card">
             <h1 class="admin-title">Admin Panel</h1>
             
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="stats">Statistics</button>
+                <button class="tab-button" data-tab="settings">Settings</button>
+                <button class="tab-button" data-tab="admin">Admin Actions</button>
+            </div>
+            
             <!-- Stats Section -->
-            <div class="stats-container">
-                <h2 class="stats-title">Dashboard Statistics</h2>
-                <div class="stats-grid">
-                    <div class="stats-item">
-                        <div class="stats-label">Total Photos in Database:</div>
-                        <div class="stats-value" id="stats-total-photos">Loading...</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-label">Last Scan Time:</div>
-                        <div class="stats-value" id="stats-last-scan">Loading...</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-label">Photos in Slideshow:</div>
-                        <div class="stats-value" id="stats-local-photos">Loading...</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-label">Soft-Deleted Photos:</div>
-                        <div class="stats-value" id="stats-deleted-photos">Loading...</div>
+            <div class="tab-content" id="stats-tab" style="display: block;">
+                <div class="stats-container">
+                    <h2 class="stats-title">Dashboard Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stats-item">
+                            <div class="stats-label">Total Photos in Database:</div>
+                            <div class="stats-value" id="stats-total-photos">Loading...</div>
+                        </div>
+                        <div class="stats-item">
+                            <div class="stats-label">Last Scan Time:</div>
+                            <div class="stats-value" id="stats-last-scan">Loading...</div>
+                        </div>
+                        <div class="stats-item">
+                            <div class="stats-label">Photos in Slideshow:</div>
+                            <div class="stats-value" id="stats-local-photos">Loading...</div>
+                        </div>
+                        <div class="stats-item">
+                            <div class="stats-label">Soft-Deleted Photos:</div>
+                            <div class="stats-value" id="stats-deleted-photos">Loading...</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- System Settings Section -->
-            <div class="settings-container">
-                <h2 class="settings-title">System Settings</h2>
-                <div class="settings-grid">
-                    <div class="settings-item">
-                        <div class="settings-label">Slideshow Interval (seconds):</div>
-                        <div class="settings-value">
-                            <input type="number" id="slideshow-interval" min="5" step="5">
+            <div class="tab-content" id="settings-tab" style="display: none;">
+                <div class="settings-container">
+                    <h2 class="settings-title">System Settings</h2>
+                    <div class="settings-grid">
+                        <div class="settings-item">
+                            <div class="settings-label">Slideshow Interval (seconds):</div>
+                            <div class="settings-value">
+                                <input type="number" id="slideshow-interval" min="5" step="5">
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">Photos Per Day:</div>
+                            <div class="settings-value">
+                                <input type="number" id="photos-per-day" min="1" max="100">
+                            </div>
                         </div>
                     </div>
-                    <div class="settings-item">
-                        <div class="settings-label">Photos Per Day:</div>
-                        <div class="settings-value">
-                            <input type="number" id="photos-per-day" min="1" max="100">
-                        </div>
-                    </div>
+                    <button id="save-settings-button" class="admin-button">Save Settings</button>
                 </div>
-                <button id="save-settings-button" class="admin-button">Save Settings</button>
             </div>
             
-            <div class="admin-button-group">
-                <button id="scan-button" class="admin-button">Scan NAS</button>
-                <button id="fetch-button" class="admin-button">Fetch Photos</button>
-                <button id="show-database-button" class="admin-button">Show All DB Photos</button>
+            <!-- Admin Actions Section -->
+            <div class="tab-content" id="admin-tab" style="display: none;">
+                <div class="admin-button-group">
+                    <button id="scan-button" class="admin-button">Scan NAS</button>
+                    <button id="fetch-button" class="admin-button">Fetch Photos</button>
+                    <button id="show-database-button" class="admin-button">Show All DB Photos</button>
+                </div>
             </div>
             
-            <div id="status-message"></div>
+            <!-- Status message shown in all tabs -->
+            <div id="status-message" class="status-message"></div>
             
             <a href="/" class="back-link">Back to Slideshow</a>
         </div>
