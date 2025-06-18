@@ -36,7 +36,7 @@ router.post('/fetch', async (req, res) => {
       // Use fallback if settings file can't be read
     }
     
-    const count = req.body.count || parseInt(process.env.PHOTOS_PER_DAY) || defaultCount;
+    const count = req.body.count || defaultCount || parseInt(process.env.PHOTOS_PER_DAY);
     const result = await fetchPhotos(count);
     res.json({ success: true, message: `${result.fetched} photos fetched`, result });
   } catch (error) {

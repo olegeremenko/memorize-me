@@ -1,4 +1,4 @@
 {
-  "slideshowInterval": 300,
-  "photosPerDay": 20
+  "slideshowInterval": 60,
+  "photosPerDay": 25
 }

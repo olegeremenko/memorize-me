@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Error loading photo, showing logo instead');
             currentPhotoEl.src = 'logo.png';
             currentPhotoEl.alt = 'Memorize Me Logo';
+            
+            // Start countdown and reload photos
+            startReloadCountdown(30);
         }
     };
     
@@ -24,7 +27,66 @@ document.addEventListener('DOMContentLoaded', () => {
     let photos = [];
     let currentPhotoIndex = 0;
     let slideshowInterval = null;
-    let SLIDESHOW_INTERVAL = parseInt(localStorage.getItem('slideshow-interval')) || 300000; // 5 minutes default
+    let countdownInterval = null;
+    let SLIDESHOW_INTERVAL = parseInt(localStorage.getItem('slideshow-interval')) || 60000; // 1 minute default
+    
+    // Start countdown to reload photos
+    const startReloadCountdown = (seconds) => {
+        // Clear any existing countdown
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        // Stop slideshow temporarily
+        if (slideshowInterval) clearInterval(slideshowInterval);
+        
+        let remainingSeconds = seconds;
+        
+        photoNameEl.textContent = 'Photo unavailable';
+        photoDateEl.textContent = `Reloading photos in ${remainingSeconds} seconds...`;
+        photoDetailsEl.textContent = 'Please wait';
+        
+        // Hide navigation buttons during countdown
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+        
+        countdownInterval = setInterval(() => {
+            remainingSeconds--;
+            
+            if (remainingSeconds <= 0) {
+                // Clear interval when countdown finishes
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                
+                // Reload photos
+                reloadPhotos();
+            } else {
+                photoDateEl.textContent = `Reloading photos in ${remainingSeconds} seconds...`;
+            }
+        }, 1000);
+    };
+    
+    // Reload photos from server
+    const reloadPhotos = async () => {
+        photoDateEl.textContent = 'Reloading photos...';
+        
+        try {
+            await loadPhotos();
+            
+            if (photos.length > 0) {
+                showPhoto(0);
+                startSlideshow();
+            } else {
+                showNoPhotosMessage();
+            }
+        } catch (error) {
+            console.error('Failed to reload photos:', error);
+            showErrorMessage('Failed to reload photos. Please try again later.');
+            
+            // Resume slideshow even if reload failed
+            if (photos.length > 0) {
+                startSlideshow();
+            }
+        }
+    };
     
     // Load system settings from the API
     const loadSystemSettings = async () => {
@@ -135,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPhotoEl.alt = 'Memorize Me Logo';
                 photoNameEl.textContent = 'Photo Load Error';
                 currentPhotoEl.style.opacity = 1; // Make sure the logo is visible
+                
+                // Start countdown and reload photos if the photo is not found
+                startReloadCountdown(10); // 10 seconds countdown
             };
             
             preloadImg.onload = () => {
@@ -214,6 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide navigation buttons when no photos are available
         prevButton.style.display = 'none';
         nextButton.style.display = 'none';
+        
+        // Clear any existing intervals
+        if (slideshowInterval) clearInterval(slideshowInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
     };
     
     // Show error message
@@ -323,8 +392,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             showPhoto(currentPhotoIndex);
                         }
+                        // Restart the slideshow with the new photo list
+                        startSlideshow();
                     } else {
                         showNoPhotosMessage();
+                        // Clear slideshow interval as there are no photos
+                        if (slideshowInterval) clearInterval(slideshowInterval);
                     }
                 } else {
                     showErrorMessage('Failed to delete photo: ' + (data.error || 'Unknown error'));
