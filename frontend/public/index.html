@@ -26,17 +26,39 @@
         </div>
         
         <div class="admin-panel">
-            <button id="fullscreen-button">Fullscreen</button>
-            <button id="share-button" title="Share this photo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 5.12036 15.0077 5.23881 15.0227 5.35484L8.94537 8.39332C8.39022 7.8365 7.6396 7.5 6.82143 7.5C5.16458 7.5 3.82143 8.84315 3.82143 10.5C3.82143 12.1569 5.16458 13.5 6.82143 13.5C7.76176 13.5 8.60753 13.0818 9.16977 12.4181L15.0245 15.3669C15.0083 15.4766 15 15.5891 15 15.7036C15 17.3604 16.3431 18.7036 18 18.7036C19.6569 18.7036 21 17.3604 21 15.7036C21 14.0467 19.6569 12.7036 18 12.7036C17.0445 12.7036 16.1752 13.1371 15.6166 13.8245L9.84498 10.9633C9.89154 10.8144 9.91667 10.6594 9.91667 10.5C9.91667 10.3443 9.8926 10.1928 9.84761 10.0469L15.9583 6.96234C16.5045 7.59953 17.2108 8 18 8Z" fill="currentColor"/>
-                </svg>
-                Share
+            <button id="hamburger-button" class="hamburger-button">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
-            <button id="delete-button">Delete</button>
-            <a href="/admin" class="admin-link">Admin Panel</a>
-            <span id="status-message"></span>
+            <div id="dropdown-menu" class="dropdown-menu">
+                <button id="fullscreen-button" title="Toggle fullscreen mode">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3V9H5V5H9V3H3ZM3 21H9V19H5V15H3V21ZM21 3H15V5H19V9H21V3ZM15 21H21V15H19V19H15V21Z" fill="currentColor"/>
+                    </svg>
+                    Fullscreen
+                </button>
+                <button id="share-button" title="Share this photo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 5.12036 15.0077 5.23881 15.0227 5.35484L8.94537 8.39332C8.39022 7.8365 7.6396 7.5 6.82143 7.5C5.16458 7.5 3.82143 8.84315 3.82143 10.5C3.82143 12.1569 5.16458 13.5 6.82143 13.5C7.76176 13.5 8.60753 13.0818 9.16977 12.4181L15.0245 15.3669C15.0083 15.4766 15 15.5891 15 15.7036C15 17.3604 16.3431 18.7036 18 18.7036C19.6569 18.7036 21 17.3604 21 15.7036C21 14.0467 19.6569 12.7036 18 12.7036C17.0445 12.7036 16.1752 13.1371 15.6166 13.8245L9.84498 10.9633C9.89154 10.8144 9.91667 10.6594 9.91667 10.5C9.91667 10.3443 9.8926 10.1928 9.84761 10.0469L15.9583 6.96234C16.5045 7.59953 17.2108 8 18 8Z" fill="currentColor"/>
+                    </svg>
+                    Share
+                </button>
+                <button id="delete-button" title="Delete this photo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+                    </svg>
+                    Delete
+                </button>
+                <a href="/admin" class="admin-link" title="Open admin panel">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/>
+                    </svg>
+                    Admin Panel
+                </a>
+            </div>
         </div>
+        <span id="status-message"></span>
         
         <!-- Delete Confirmation Modal -->
         <div id="delete-modal" class="modal">

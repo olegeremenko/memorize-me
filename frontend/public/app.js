@@ -291,9 +291,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const showErrorMessage = (message) => {
         statusMessageEl.textContent = message;
         statusMessageEl.style.color = 'red';
+        statusMessageEl.classList.add('show');
         
         setTimeout(() => {
-            statusMessageEl.textContent = '';
+            statusMessageEl.classList.remove('show');
+            setTimeout(() => {
+                statusMessageEl.textContent = '';
+            }, 300); // Wait for fade out transition before clearing text
         }, 5000);
     };
     
@@ -301,9 +305,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const showSuccessMessage = (message) => {
         statusMessageEl.textContent = message;
         statusMessageEl.style.color = '#4CAF50';
+        statusMessageEl.classList.add('show');
         
         setTimeout(() => {
-            statusMessageEl.textContent = '';
+            statusMessageEl.classList.remove('show');
+            setTimeout(() => {
+                statusMessageEl.textContent = '';
+            }, 300); // Wait for fade out transition before clearing text
         }, 5000);
     };
     
@@ -532,12 +540,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Hamburger menu functionality
+    const hamburgerButton = document.getElementById('hamburger-button');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    
+    const toggleMenu = () => {
+        hamburgerButton.classList.toggle('active');
+        dropdownMenu.classList.toggle('show');
+    };
+    
+    const closeMenu = () => {
+        hamburgerButton.classList.remove('active');
+        dropdownMenu.classList.remove('show');
+    };
+    
     // Event listeners
     prevButton.addEventListener('click', prevPhoto);
     nextButton.addEventListener('click', nextPhoto);
-    shareButton.addEventListener('click', sharePhoto);
-    fullscreenButton.addEventListener('click', toggleFullScreen);
-    deleteButton.addEventListener('click', showDeleteModal);
+    shareButton.addEventListener('click', () => {
+        sharePhoto();
+        closeMenu();
+    });
+    fullscreenButton.addEventListener('click', () => {
+        toggleFullScreen();
+        closeMenu();
+    });
+    deleteButton.addEventListener('click', () => {
+        showDeleteModal();
+        closeMenu();
+    });
+    hamburgerButton.addEventListener('click', toggleMenu);
     
     // Add keyboard navigation
     document.addEventListener('keydown', (e) => {
@@ -566,6 +598,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (event) => {
         if (event.target === deleteModal) {
             closeDeleteModal();
+        }
+        
+        // Close dropdown menu when clicking outside
+        if (dropdownMenu.classList.contains('show') && 
+            !dropdownMenu.contains(event.target) && 
+            !hamburgerButton.contains(event.target)) {
+            closeMenu();
         }
     });
     
