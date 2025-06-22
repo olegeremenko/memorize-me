@@ -7,8 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoDetailsEl = document.getElementById('photo-details');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
+    const shareButton = document.getElementById('share-button');
     const fullscreenButton = document.getElementById('fullscreen-button');
     const statusMessageEl = document.getElementById('status-message');
+    const deleteButton = document.getElementById('delete-button');
     
     // Add error handler for the image element
     currentPhotoEl.onerror = () => {
@@ -340,6 +342,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.documentElement.msRequestFullscreen();
                 fullscreenButton.textContent = "Exit Fullscreen";
             }
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                fullscreenButton.textContent = "Fullscreen";
+            } else if (document.webkitExitFullscreen) { // Safari
+                document.webkitExitFullscreen();
+                fullscreenButton.textContent = "Fullscreen";
+            } else if (document.msExitFullscreen) { // IE11
+                document.msExitFullscreen();
+                fullscreenButton.textContent = "Fullscreen";
+            }
         }
     }
 
@@ -414,11 +428,134 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Share the current photo
+    const sharePhoto = async () => {
+        if (photos.length === 0 || currentPhotoIndex < 0 || currentPhotoIndex >= photos.length) {
+            showErrorMessage('No photo available to share');
+            return;
+        }
+
+        const currentPhoto = photos[currentPhotoIndex];
+        
+        // Get the absolute URL of the current photo
+        const photoUrl = new URL(currentPhoto.path, window.location.origin).href;
+        
+        // Prepare share data
+        const shareData = {
+            title: currentPhoto.originalFileName || currentPhoto.name,
+            text: 'Check out this photo from Memorize Me!',
+            url: photoUrl
+        };
+        
+        try {
+            // Check if Web Share API is supported
+            if (navigator.share && navigator.canShare(shareData)) {
+                // Create a promise that will be rejected if sharing takes too long
+                const sharePromise = navigator.share(shareData);
+                
+                // For iframe scenarios, try to communicate with parent frame 
+                // in case direct sharing fails
+                if (window !== window.parent) {
+                    try {
+                        // Try to send message to parent frame with share data
+                        window.parent.postMessage({
+                            type: 'SHARE_PHOTO',
+                            data: shareData
+                        }, '*');
+                    } catch (err) {
+                        console.warn('Could not communicate with parent frame:', err);
+                    }
+                }
+                
+                await sharePromise;
+                showSuccessMessage('Photo shared successfully!');
+            } else {
+                // Fallback for browsers that don't support the Web Share API
+                // or when running in an iframe without permissions
+                
+                // Try to use Clipboard API first (more modern)
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(photoUrl);
+                    showSuccessMessage('Photo URL copied to clipboard!');
+                } else {
+                    // Fallback to execCommand (deprecated but wider support)
+                    const tempInput = document.createElement('input');
+                    document.body.appendChild(tempInput);
+                    tempInput.value = photoUrl;
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    
+                    showSuccessMessage('Photo URL copied to clipboard!');
+                }
+                
+                // If we're in an iframe, also try to communicate with parent
+                if (window !== window.parent) {
+                    try {
+                        window.parent.postMessage({
+                            type: 'SHARE_PHOTO',
+                            data: shareData
+                        }, '*');
+                    } catch (err) {
+                        console.warn('Could not communicate with parent frame:', err);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error sharing photo:', error);
+            
+            if (error.name === 'AbortError') {
+                // User cancelled the share operation
+                showErrorMessage('Sharing cancelled');
+            } else if (error.name === 'NotAllowedError') {
+                // Permission denied (common in iframes)
+                showErrorMessage('Permission denied. URL copied to clipboard instead.');
+                
+                // Try clipboard as fallback
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(photoUrl);
+                    } else {
+                        const tempInput = document.createElement('input');
+                        document.body.appendChild(tempInput);
+                        tempInput.value = photoUrl;
+                        tempInput.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempInput);
+                    }
+                } catch (clipboardErr) {
+                    console.error('Failed to copy to clipboard:', clipboardErr);
+                }
+            } else {
+                showErrorMessage('Failed to share photo');
+            }
+        }
+    };
+    
     // Event listeners
     prevButton.addEventListener('click', prevPhoto);
     nextButton.addEventListener('click', nextPhoto);
+    shareButton.addEventListener('click', sharePhoto);
     fullscreenButton.addEventListener('click', toggleFullScreen);
-    document.getElementById('delete-button').addEventListener('click', showDeleteModal);
+    deleteButton.addEventListener('click', showDeleteModal);
+    
+    // Add keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        switch (e.key) {
+            case 'ArrowLeft':
+                prevPhoto();
+                break;
+            case 'ArrowRight':
+                nextPhoto();
+                break;
+            case 's':
+                sharePhoto();
+                break;
+            case 'f':
+                toggleFullScreen();
+                break;
+        }
+    });
     
     // Delete modal event listeners
     closeButton.addEventListener('click', closeDeleteModal);
@@ -431,10 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeDeleteModal();
         }
     });
-    document.getElementById('delete-button').addEventListener('click', showDeleteModal);
-    closeButton.addEventListener('click', closeDeleteModal);
-    cancelDeleteButton.addEventListener('click', closeDeleteModal);
-    confirmDeleteButton.addEventListener('click', deleteCurrentPhoto);
     
     // Keyboard navigation
     document.addEventListener('keydown', (event) => {
