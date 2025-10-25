@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fullscreenButton = document.getElementById('fullscreen-button');
     const statusMessageEl = document.getElementById('status-message');
     const deleteButton = document.getElementById('delete-button');
+    const toggleNavButton = document.getElementById('toggle-nav-button');
     
     // Add error handler for the image element
     currentPhotoEl.onerror = () => {
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let slideshowInterval = null;
     let countdownInterval = null;
     let SLIDESHOW_INTERVAL = parseInt(localStorage.getItem('slideshow-interval')) || 60000; // 1 minute default
+    let showNavigationButtons = false; // Navigation buttons hidden by default
     
     // Start countdown to reload photos
     const startReloadCountdown = (seconds) => {
@@ -64,6 +66,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 photoDateEl.textContent = `Reloading photos in ${remainingSeconds} seconds...`;
             }
         }, 1000);
+    };
+    
+    // Toggle navigation buttons visibility
+    const toggleNavigationButtons = () => {
+        showNavigationButtons = !showNavigationButtons;
+        
+        if (showNavigationButtons) {
+            prevButton.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+        } else {
+            prevButton.classList.add('hidden');
+            nextButton.classList.add('hidden');
+        }
+        
+        closeMenu();
     };
     
     // Reload photos from server
@@ -111,9 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize the application
     const init = async () => {
-        // Hide navigation buttons initially until we know we have photos
-        prevButton.style.display = 'none';
-        nextButton.style.display = 'none';
+        // Hide navigation buttons by default
+        prevButton.classList.add('hidden');
+        nextButton.classList.add('hidden');
         
         // Load system settings
         await loadSystemSettings();
@@ -171,10 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };    // Display a photo by index
     const showPhoto = (index) => {
         if (photos.length === 0) return;
-        
-        // Show navigation buttons as we have photos to display
-        prevButton.style.display = 'block';
-        nextButton.style.display = 'block';
         
         currentPhotoIndex = index;
         
@@ -569,6 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showDeleteModal();
         closeMenu();
     });
+    toggleNavButton.addEventListener('click', toggleNavigationButtons);
     hamburgerButton.addEventListener('click', toggleMenu);
     
     // Add keyboard navigation
