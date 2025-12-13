@@ -27,7 +27,19 @@ router.get('/', async (req, res) => {
       await fs.writeJson(settingsPath, settings, { spaces: 2 });
     }
     
-    res.json({ settings });
+    // Load config.json for NAS configuration
+    let nasConfig = null;
+    const configPath = path.join(process.cwd(), 'config.json');
+    if (fs.existsSync(configPath)) {
+      try {
+        const configData = await fs.readJson(configPath);
+        nasConfig = configData.photoScanConfig || null;
+      } catch (configError) {
+        console.error('Error loading config.json:', configError);
+      }
+    }
+    
+    res.json({ settings, nasConfig });
   } catch (error) {
     console.error('Error getting settings:', error);
     res.status(500).json({ error: 'Failed to get settings' });

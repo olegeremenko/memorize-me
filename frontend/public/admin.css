@@ -426,3 +426,70 @@
   color: #666;
   cursor: not-allowed;
 }
+
+/* Settings actions */
+.settings-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.admin-button.secondary {
+  background: rgba(100, 100, 100, 0.8);
+  color: #fff;
+}
+
+.admin-button.secondary:hover {
+  background: rgba(130, 130, 130, 0.9);
+}
+
+/* NAS Config Modal Content */
+#nas-config-modal .modal-content {
+  max-width: 600px;
+  width: 90%;
+  margin: 5% auto;
+}
+
+.nas-config-display h3 {
+  color: #fff;
+  margin: 20px 0 10px 0;
+  font-size: 1.1em;
+}
+
+.nas-config-display h3:first-child {
+  margin-top: 0;
+}
+
+.nas-config-display ul {
+  margin: 0 0 15px 20px;
+  padding: 0;
+}
+
+.nas-config-display li {
+  color: #ddd;
+  margin: 5px 0;
+}
+
+.nas-config-display code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: "Courier New", monospace;
+  color: #ffeb3b;
+}
+
+.file-extensions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.file-ext-badge {
+  background: #4caf50;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  font-weight: 500;
+}

@@ -22,10 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const photosPerDayInput = document.getElementById('photos-per-day');
     const sameDayPhotosInput = document.getElementById('same-day-photos');
     const saveSettingsButton = document.getElementById('save-settings-button');
+    const showNasConfigButton = document.getElementById('show-nas-config-button');
     
     // Tab Navigation
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
+    
+    // NAS Config modal elements
+    const nasConfigModal = document.getElementById('nas-config-modal');
+    const nasConfigModalClose = nasConfigModal.querySelector('.close');
+    const nasConfigContent = document.getElementById('nas-config-content');
+    
+    // Global variable to store NAS config
+    let currentNasConfig = null;
     
     // Job tracking
     const activeJobs = new Set();
@@ -562,6 +571,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 photosPerDayInput.value = 10;
                 sameDayPhotosInput.value = 1;
             }
+            
+            // Store NAS config for display
+            if (data && data.nasConfig) {
+                currentNasConfig = data.nasConfig;
+            }
         } catch (error) {
             console.error('Error loading settings:', error);
             showErrorMessage('Failed to load system settings');
@@ -626,11 +640,16 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettingsButton.addEventListener('click', saveSettings);
     showDatabaseButton.addEventListener('click', openDatabaseModal);
     closeModal.addEventListener('click', closeDatabaseModal);
+    showNasConfigButton.addEventListener('click', showNasConfigModal);
+    nasConfigModalClose.addEventListener('click', closeNasConfigModal);
     
     // Close modal when clicking outside of it
     window.addEventListener('click', (event) => {
         if (event.target === photoDatabaseModal) {
             closeDatabaseModal();
+        }
+        if (event.target === nasConfigModal) {
+            closeNasConfigModal();
         }
     });
     
@@ -638,6 +657,67 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('beforeunload', () => {
         stopJobPolling();
     });
+    
+    // NAS Config Modal Functions
+    function showNasConfigModal() {
+        if (currentNasConfig) {
+            displayNasConfig(currentNasConfig);
+        } else {
+            nasConfigContent.innerHTML = '<p>No NAS configuration found.</p>';
+        }
+        nasConfigModal.style.display = 'block';
+    }
+    
+    function closeNasConfigModal() {
+        nasConfigModal.style.display = 'none';
+    }
+    
+    function displayNasConfig(config) {
+        let html = '<div class="nas-config-display">';
+        
+        // Subfolders
+        html += '<h3>Tracked Folders:</h3>';
+        if (config.subfolders && config.subfolders.length > 0) {
+            html += '<ul>';
+            config.subfolders.forEach(folder => {
+                if (typeof folder === 'string') {
+                    html += `<li><strong>${folder}</strong></li>`;
+                } else {
+                    html += `<li><strong>${folder.path}</strong> ${folder.recursive ? '(recursive)' : '(non-recursive)'}</li>`;
+                }
+            });
+            html += '</ul>';
+        } else {
+            html += '<p>No specific folders configured (scanning root directory)</p>';
+        }
+        
+        // Exclusion patterns
+        html += '<h3>Exclusion Patterns:</h3>';
+        if (config.exclusionPatterns && config.exclusionPatterns.length > 0) {
+            html += '<ul>';
+            config.exclusionPatterns.forEach(pattern => {
+                html += `<li><code>${pattern}</code></li>`;
+            });
+            html += '</ul>';
+        } else {
+            html += '<p>No exclusion patterns configured</p>';
+        }
+        
+        // File extensions
+        html += '<h3>Supported File Extensions:</h3>';
+        if (config.imageFileExtensions && config.imageFileExtensions.length > 0) {
+            html += '<div class="file-extensions">';
+            config.imageFileExtensions.forEach(ext => {
+                html += `<span class="file-ext-badge">${ext}</span>`;
+            });
+            html += '</div>';
+        } else {
+            html += '<p>No file extensions configured</p>';
+        }
+        
+        html += '</div>';
+        nasConfigContent.innerHTML = html;
+    }
     
     // Check for active jobs after all functions are declared
     checkForActiveJobs();

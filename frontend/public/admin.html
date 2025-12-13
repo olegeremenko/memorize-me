@@ -71,7 +71,10 @@
                             </div>
                         </div>
                     </div>
-                    <button id="save-settings-button" class="admin-button">Save Settings</button>
+                    <div class="settings-actions">
+                        <button id="show-nas-config-button" class="admin-button secondary">Show NAS Config</button>
+                        <button id="save-settings-button" class="admin-button">Save Settings</button>
+                    </div>
                 </div>
             </div>
             
@@ -132,6 +135,21 @@
                             <!-- Table rows will be inserted here by JavaScript -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal structure for NAS config -->
+    <div id="nas-config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>NAS Configuration</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="nas-config-content">
+                    <p>Loading NAS configuration...</p>
                 </div>
             </div>
         </div>
