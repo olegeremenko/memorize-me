@@ -13,8 +13,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy only package files first for better Docker layer caching
-# The actual source code will be mounted as a volume
+# Bundle app source
+COPY . .
 
 # Create necessary directories
 RUN mkdir -p backend/data/photos
