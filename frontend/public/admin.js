@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeJobs = new Set();
     let jobPollingInterval = null;
     
+    // Pagination state
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalPhotos = 0;
+    const pageSize = 100;
+    
     // Initialize tab functionality
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -347,17 +353,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Load and display database photos in the modal
-    const loadDatabasePhotos = async () => {
+    const loadDatabasePhotos = async (page = 1) => {
         try {
             setButtonLoading(showDatabaseButton, true);
-            statusMessageEl.textContent = 'Loading database photos...';
+            statusMessageEl.textContent = `Loading database photos (page ${page})...`;
             
-            const response = await fetch('/api/stats');
+            const response = await fetch(`/api/stats?page=${page}&limit=${pageSize}`);
             const data = await response.json();
             
             if (data && data.photos) {
+                currentPage = data.pagination.currentPage;
+                totalPages = data.pagination.totalPages;
+                totalPhotos = data.pagination.totalCount;
+                
                 displayDatabasePhotos(data.photos);
-                showSuccessMessage(`Loaded ${data.photos.length} database photos`);
+                updatePaginationControls();
+                showSuccessMessage(`Loaded page ${currentPage} of ${totalPages} (${data.photos.length} photos)`);
             } else {
                 photoTableBody.innerHTML = '<tr><td colspan="7">No photos found in database</td></tr>';
                 showErrorMessage('No photos found in database');
@@ -371,10 +382,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Update pagination controls
+    const updatePaginationControls = () => {
+        photoCount.textContent = `Total: ${totalPhotos} photos (page ${currentPage} of ${totalPages})`;
+        
+        const paginationContainer = document.getElementById('pagination-controls');
+        if (!paginationContainer) return;
+        
+        let paginationHTML = '<div class="pagination-header">';
+        
+        // Previous button
+        if (currentPage > 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadDatabasePhotos(${currentPage - 1})">&laquo; Previous</button>`;
+        } else {
+            paginationHTML += '<button class="pagination-btn disabled">&laquo; Previous</button>';
+        }
+        
+        // Next button
+        if (currentPage < totalPages) {
+            paginationHTML += `<button class="pagination-btn" onclick="loadDatabasePhotos(${currentPage + 1})">Next &raquo;</button>`;
+        } else {
+            paginationHTML += '<button class="pagination-btn disabled">Next &raquo;</button>';
+        }
+        
+        paginationHTML += '</div>';
+        paginationContainer.innerHTML = paginationHTML;
+    };
+    
     // Display database photos in the modal table
     const displayDatabasePhotos = (dbPhotos) => {
         photoTableBody.innerHTML = '';
-        photoCount.textContent = `Total: ${dbPhotos.length} photos`;
         
         dbPhotos.forEach(photo => {
             const row = document.createElement('tr');
@@ -412,10 +449,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
+    // Make loadDatabasePhotos globally accessible for pagination
+    window.loadDatabasePhotos = loadDatabasePhotos;
+    
     // Open the database photos modal
     const openDatabaseModal = async () => {
         photoDatabaseModal.style.display = 'block';
-        await loadDatabasePhotos();
+        await loadDatabasePhotos(1); // Always start from page 1
     };
     
     // Close the database photos modal

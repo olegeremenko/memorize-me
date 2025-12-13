@@ -210,10 +210,10 @@ const markPhotoAsDeleted = (photoId) => {
 };
 
 // Get all photos from the database
-const getAllDatabasePhotos = () => {
+const getAllDatabasePhotos = (limit = null, offset = 0) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
-      const query = `
+    let query = `
       SELECT 
         np.id as nas_id,
         np.path as nas_path, 
@@ -230,7 +230,13 @@ const getAllDatabasePhotos = () => {
       ORDER BY np.filename
     `;
     
-    db.all(query, [], (err, rows) => {
+    const params = [];
+    if (limit) {
+      query += ' LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+    }
+    
+    db.all(query, params, (err, rows) => {
       db.close();
       if (err) {
         reject(err);
@@ -301,6 +307,23 @@ const getLocalPhotoCount = () => {
   });
 };
 
+// Get total count of photos for pagination
+const getTotalPhotosCount = () => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    const query = 'SELECT COUNT(*) as total FROM nas_photos';
+    
+    db.get(query, [], (err, row) => {
+      db.close();
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row.total);
+      }
+    });
+  });
+};
+
 module.exports = {
   initDatabase,
   getDb,
@@ -311,6 +334,7 @@ module.exports = {
   incrementPhotoDownloads,
   markPhotoAsDeleted,
   getAllDatabasePhotos,
+  getTotalPhotosCount,
   getPhotoStats,
   getLocalPhotoCount
 };
