@@ -53,6 +53,11 @@ router.get('/', async (req, res) => {
         let relativeTime = null;
         let isSameDay = false;
         
+        // Check if this is a same-day photo by filename prefix
+        if (file.startsWith('sameday_')) {
+          isSameDay = true;
+        }
+        
         // Extract the base filename without extension
         const baseName = originalFileName.replace(/\.[^/.]+$/, "");
         const timestampMatch = baseName.match(/^(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})/);
@@ -63,15 +68,18 @@ router.get('/', async (req, res) => {
           if (!isNaN(timestamp)) {
             relativeTime = getRelativeTimeString(timestamp);
             
-            // Check if this photo is from the same day in a past year
-            const now = new Date();
-            const photoMonth = timestamp.getMonth();
-            const photoDay = timestamp.getDate();
-            const photoYear = timestamp.getFullYear();
-            
-            isSameDay = (photoMonth === now.getMonth() && 
-                        photoDay === now.getDate() && 
-                        photoYear !== now.getFullYear());
+            // Only check date-based same-day logic if not already marked by prefix
+            if (!isSameDay) {
+              // Check if this photo is from the same day in a past year
+              const now = new Date();
+              const photoMonth = timestamp.getMonth();
+              const photoDay = timestamp.getDate();
+              const photoYear = timestamp.getFullYear();
+              
+              isSameDay = (photoMonth === now.getMonth() && 
+                          photoDay === now.getDate() && 
+                          photoYear !== now.getFullYear());
+            }
           }
         }
 
