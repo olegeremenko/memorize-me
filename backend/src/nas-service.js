@@ -295,6 +295,37 @@ const clearLocalPhotos = async () => {
   return await client.clearLocalPhotos();
 };
 
+// Download photo buffer directly from NAS without saving locally
+const downloadPhotoBuffer = async (photoPath) => {
+  try {
+    // Get mount path from environment (same as NAS client)
+    const mountedPath = process.env.MOUNTED_PHOTOS_PATH;
+    
+    if (!mountedPath) {
+      throw new Error('MOUNTED_PHOTOS_PATH environment variable not configured');
+    }
+    
+    // Ensure NAS is mounted
+    await ensureMountAndVerify();
+    
+    const fullPath = path.join(mountedPath, photoPath);
+    
+    // Check if file exists
+    const fileExists = await fs.pathExists(fullPath);
+    
+    if (!fileExists) {
+      return null;
+    }
+    
+    // Read file as buffer
+    const buffer = await fs.readFile(fullPath);
+    return buffer;
+  } catch (error) {
+    console.error('Error downloading photo buffer from NAS:', error);
+    return null;
+  }
+};
+
 // Scan mounted folder for photos
 const scanNAS = async () => {
   // Check if scan is already in progress
@@ -368,5 +399,6 @@ module.exports = {
   getNASClient,
   scanNAS,
   clearLocalPhotos,
+  downloadPhotoBuffer,
   isScanningInProgress
 };

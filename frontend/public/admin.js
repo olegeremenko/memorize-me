@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalPages = 1;
     let totalPhotos = 0;
     const pageSize = 100;
+    let slideshowFilter = false;
     
     // Initialize tab functionality
     tabButtons.forEach(button => {
@@ -353,12 +354,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Load and display database photos in the modal
-    const loadDatabasePhotos = async (page = 1) => {
+    const loadDatabasePhotos = async (page = 1, useCurrentFilter = true) => {
         try {
             setButtonLoading(showDatabaseButton, true);
-            statusMessageEl.textContent = `Loading database photos (page ${page})...`;
+            if (useCurrentFilter) {
+                slideshowFilter = document.getElementById('downloaded-filter')?.checked || false;
+            }
             
-            const response = await fetch(`/api/stats?page=${page}&limit=${pageSize}`);
+            const filterText = slideshowFilter ? ' (slideshow only)' : '';
+            statusMessageEl.textContent = `Loading database photos${filterText} (page ${page})...`;
+            
+            const filterParam = slideshowFilter ? '&slideshowOnly=true' : '';
+            const url = `/api/stats?page=${page}&limit=${pageSize}${filterParam}`;
+            const response = await fetch(url);
             const data = await response.json();
             
             if (data && data.photos) {
@@ -429,6 +437,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const downloadedClass = isDownloaded ? 'downloaded-yes' : 'downloaded-no';
             const downloadedText = isDownloaded ? 'Yes' : 'No';
             
+            // Create download link/icon based on availability
+            let downloadCell = 'N/A';
+            
+            if (isDownloaded && photo.local_path) {
+                // Check if file actually exists locally
+                if (photo.file_exists_locally) {
+                    // Local file exists - direct download
+                    const localFilename = photo.local_path.split('/').pop();
+                    downloadCell = `<a href="/photos/${encodeURIComponent(localFilename)}" target="_blank" class="download-link local-download" title="View local photo">
+                        📥
+                    </a>`;
+                } else {
+                    // File was downloaded but local file missing - download from NAS
+                    downloadCell = `<a href="/api/admin/download-nas/${photo.nas_id}" target="_blank" class="download-link nas-download" title="Download from NAS (file missing locally)">
+                        🌐
+                    </a>`;
+                }
+            } else if (photo.nas_id) {
+                // Never downloaded - option to download from NAS
+                downloadCell = `<a href="/api/admin/download-nas/${photo.nas_id}" target="_blank" class="download-link nas-download" title="Download from NAS">
+                    🌐
+                </a>`;
+            }
+            
             // Create table cells
             row.innerHTML = `
                 <td>${photo.nas_id || 'N/A'}</td>
@@ -441,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${sizeMB}</td>
                 <td>${lastModified}</td>
                 <td class="${downloadedClass}">${downloadedText}</td>
-                <td>${photo.local_path || 'N/A'}</td>
+                <td class="download-cell">${downloadCell}</td>
                 <td>${photo.downloads_count || '0'}</td>
             `;
             
@@ -455,6 +487,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Open the database photos modal
     const openDatabaseModal = async () => {
         photoDatabaseModal.style.display = 'block';
+        
+        // Add filter toggle event listener
+        const filterToggle = document.getElementById('downloaded-filter');
+        if (filterToggle) {
+            filterToggle.addEventListener('change', () => {
+                currentPage = 1; // Reset to first page when filter changes
+                loadDatabasePhotos(1, true);
+            });
+        }
+        
         await loadDatabasePhotos(1); // Always start from page 1
     };
     

@@ -290,6 +290,86 @@
   padding: 0 5px;
 }
 
+.filter-section {
+  display: flex;
+  align-items: center;
+}
+
+.pagination-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.filter-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.filter-label {
+  user-select: none;
+  cursor: pointer;
+}
+
+.download-cell {
+  text-align: center;
+}
+
+.download-link {
+  font-size: 18px;
+  text-decoration: none;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.download-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.download-link.local-download {
+  color: #4caf50;
+}
+
+.download-link.nas-download {
+  color: #ff9800;
+}
+
+.download-link.local-download:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.download-link.nas-download:hover {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.download-link.local-download {
+  color: #4caf50;
+}
+
+.download-link.nas-download {
+  color: #ff9800;
+}
+
+.download-link.local-download:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.download-link.nas-download:hover {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
 .pagination-header {
   display: flex;
   align-items: center;

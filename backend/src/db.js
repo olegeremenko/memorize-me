@@ -210,7 +210,7 @@ const markPhotoAsDeleted = (photoId) => {
 };
 
 // Get all photos from the database
-const getAllDatabasePhotos = (limit = null, offset = 0) => {
+const getAllDatabasePhotos = async (limit = null, offset = 0, slideshowOnly = false) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
     let query = `
@@ -226,7 +226,8 @@ const getAllDatabasePhotos = (limit = null, offset = 0) => {
         dp.downloads_count as downloads_count,
         dp.deleted_at as deleted_at
       FROM nas_photos np
-      LEFT JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
+      ${slideshowOnly ? 'INNER' : 'LEFT'} JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
+      ${slideshowOnly ? 'WHERE dp.local_path IS NOT NULL AND dp.deleted_at IS NULL' : ''}
       ORDER BY np.filename
     `;
     
@@ -236,12 +237,42 @@ const getAllDatabasePhotos = (limit = null, offset = 0) => {
       params.push(limit, offset);
     }
     
-    db.all(query, params, (err, rows) => {
+    db.all(query, params, async (err, rows) => {
       db.close();
       if (err) {
         reject(err);
       } else {
-        resolve(rows);
+        try {
+          // Always check file existence for all photos with local_path
+          await fs.ensureDir(photosDir);
+          const actualFiles = await fs.readdir(photosDir);
+          const imageFiles = actualFiles.filter(file => /\.(jpg|jpeg|png|gif)$/i.test(file));
+          
+          // Add file existence information to all rows
+          const rowsWithExistence = rows.map(row => {
+            let fileExists = false;
+            if (row.local_path) {
+              const filename = path.basename(row.local_path);
+              fileExists = imageFiles.includes(filename);
+            }
+            
+            return {
+              ...row,
+              file_exists_locally: fileExists
+            };
+          });
+          
+          if (slideshowOnly) {
+            // Filter to only photos that exist locally
+            const existingPhotos = rowsWithExistence.filter(row => row.file_exists_locally);
+            resolve(existingPhotos);
+          } else {
+            resolve(rowsWithExistence);
+          }
+        } catch (error) {
+          console.error('Error reading photos directory:', error);
+          resolve(rows.map(row => ({ ...row, file_exists_locally: false })));
+        }
       }
     });
   });
@@ -308,10 +339,15 @@ const getLocalPhotoCount = () => {
 };
 
 // Get total count of photos for pagination
-const getTotalPhotosCount = () => {
+const getTotalPhotosCount = async (slideshowOnly = false) => {
+  if (slideshowOnly) {
+    // Use the same approach as getLocalPhotoCount for consistency
+    return await getLocalPhotoCount();
+  }
+  
   return new Promise((resolve, reject) => {
     const db = getDb();
-    const query = 'SELECT COUNT(*) as total FROM nas_photos';
+    const query = 'SELECT COUNT(*) as total FROM nas_photos np';
     
     db.get(query, [], (err, row) => {
       db.close();
@@ -319,6 +355,24 @@ const getTotalPhotosCount = () => {
         reject(err);
       } else {
         resolve(row.total);
+      }
+    });
+  });
+};
+
+// Get NAS photo by ID
+const getNASPhotoById = async (photoId) => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    const query = 'SELECT * FROM nas_photos WHERE id = ?';
+    
+    db.get(query, [photoId], (err, row) => {
+      db.close();
+      if (err) {
+        console.error('Error getting NAS photo by ID:', err);
+        reject(err);
+      } else {
+        resolve(row);
       }
     });
   });
@@ -334,6 +388,7 @@ module.exports = {
   incrementPhotoDownloads,
   markPhotoAsDeleted,
   getAllDatabasePhotos,
+  getNASPhotoById,
   getTotalPhotosCount,
   getPhotoStats,
   getLocalPhotoCount

@@ -170,6 +170,36 @@ router.get('/jobs/:jobId', (req, res) => {
   res.json(job);
 });
 
+// Download photo directly from NAS (temporary download)
+router.get('/download-nas/:photoId', async (req, res) => {
+  try {
+    const photoId = req.params.photoId;
+    const db = require('../db');
+    const photo = await db.getNASPhotoById(photoId);
+    
+    if (!photo) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+
+    const nasService = require('../nas-service');
+    const photoBuffer = await nasService.downloadPhotoBuffer(photo.path);
+    
+    if (!photoBuffer) {
+      return res.status(404).json({ error: 'Photo not accessible on NAS' });
+    }
+
+    // Set appropriate headers
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Content-Disposition', `inline; filename="${photo.filename}"`);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    
+    res.send(photoBuffer);
+  } catch (error) {
+    console.error('Error downloading photo from NAS:', error);
+    res.status(500).json({ error: 'Failed to download photo from NAS' });
+  }
+});
+
 // Get all active jobs
 router.get('/jobs', (req, res) => {
   const activeJobs = getActiveJobs();

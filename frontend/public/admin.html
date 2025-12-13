@@ -96,8 +96,16 @@
             </div>
             <div class="modal-body">
                 <div class="modal-stats">
-                    <span id="photo-count"></span>
-                    <div id="pagination-controls"></div>
+                    <div class="filter-section">
+                        <label class="filter-toggle">
+                            <input type="checkbox" id="downloaded-filter" />
+                            <span class="filter-label">Show only slideshow photos</span>
+                        </label>
+                    </div>
+                    <div class="pagination-section">
+                        <span id="photo-count"></span>
+                        <div id="pagination-controls"></div>
+                    </div>
                 </div>
                 <div class="table-container">
                     <table id="photos-table">
@@ -107,8 +115,8 @@
                                 <th>File Info</th>
                                 <th>Size</th>
                                 <th>Last Modified</th>
-                                <th>Downloaded</th>
-                                <th>Local Path</th>
+                                <th>Was in Slideshow</th>
+                                <th>Download</th>
                                 <th>Downloads Count</th>
                             </tr>
                         </thead>
