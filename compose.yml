@@ -13,9 +13,11 @@ services:
     security_opt:
       - apparmor:unconfined
     volumes:
-      # Store photos and database on the host machine
+      # Mount the entire application directory for live code updates
+      - .:/app
+      # Override data directory to persist on host
       - ./backend/data:/app/backend/data
-      # Mount your .env file for configuration
+      # Mount your .env file for configuration  
       - ./.env:/app/.env
     environment:
       # Override environment variables as needed

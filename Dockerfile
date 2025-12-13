@@ -13,8 +13,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Bundle app source
-COPY . .
+# Copy only package files first for better Docker layer caching
+# The actual source code will be mounted as a volume
 
 # Create necessary directories
 RUN mkdir -p backend/data/photos
@@ -28,7 +28,7 @@ ENV LOCAL_PHOTOS_PATH=/app/backend/data/photos
 # Expose port
 EXPOSE 3000
 
-# Copy and set the entrypoint script
+# Copy the entrypoint script (this is needed at build time)
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
