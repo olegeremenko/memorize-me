@@ -103,9 +103,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     };
     
+    // Set button loading state
+    const setButtonLoading = (button, loading) => {
+        if (loading) {
+            button.disabled = true;
+            button.classList.add('loading');
+        } else {
+            button.disabled = false;
+            button.classList.remove('loading');
+        }
+    };
+    
     // Scan NAS for photos
     const scanNAS = async () => {
         try {
+            setButtonLoading(scanButton, true);
             statusMessageEl.textContent = 'Scanning NAS...';
             
             const response = await fetch('/api/admin/scan', {
@@ -122,17 +134,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reload stats after scanning
                 loadPhotoStats();
             } else {
-                showErrorMessage('NAS scan failed: ' + (data.error || 'Unknown error'));
+                // Handle specific case where scan is already in progress
+                if (response.status === 409 && data.isScanInProgress) {
+                    showErrorMessage('A NAS scan is already in progress. Please wait for it to complete.');
+                } else {
+                    showErrorMessage('NAS scan failed: ' + (data.error || 'Unknown error'));
+                }
             }
         } catch (error) {
             console.error('Error scanning NAS:', error);
             showErrorMessage('Failed to communicate with server for NAS scan');
+        } finally {
+            setButtonLoading(scanButton, false);
         }
     };
     
     // Fetch photos from NAS
     const fetchPhotos = async () => {
         try {
+            setButtonLoading(fetchButton, true);
             // Use the value from the settings input field
             const count = parseInt(photosPerDayInput.value) || 10;
             statusMessageEl.textContent = `Fetching ${count} photos...`;
@@ -157,12 +177,15 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error fetching photos:', error);
             showErrorMessage('Failed to communicate with server for fetching photos');
+        } finally {
+            setButtonLoading(fetchButton, false);
         }
     };
     
     // Load and display database photos in the modal
     const loadDatabasePhotos = async () => {
         try {
+            setButtonLoading(showDatabaseButton, true);
             statusMessageEl.textContent = 'Loading database photos...';
             
             const response = await fetch('/api/stats');
@@ -179,6 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading database photos:', error);
             showErrorMessage('Failed to load database photos');
             photoTableBody.innerHTML = '<tr><td colspan="7">Error loading database photos</td></tr>';
+        } finally {
+            setButtonLoading(showDatabaseButton, false);
         }
     };
     
@@ -260,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to save system settings
     async function saveSettings() {
         try {
+            setButtonLoading(saveSettingsButton, true);
             statusMessageEl.textContent = 'Saving settings...';
             
             const slideshowInterval = parseInt(slideshowIntervalInput.value);
@@ -297,6 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error saving settings:', error);
             showErrorMessage('Failed to save settings');
+        } finally {
+            setButtonLoading(saveSettingsButton, false);
         }
     }
     

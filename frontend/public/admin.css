@@ -1,181 +1,216 @@
 .admin-container {
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #000;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
 }
 
 .logo-container {
-    margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 .logo {
-    max-width: 250px;
-    height: auto;
+  max-width: 250px;
+  height: auto;
 }
 
 .admin-card {
-    background: rgba(30, 30, 30, 0.9);
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    max-width: 600px;
-    width: 100%;
+  background: rgba(30, 30, 30, 0.9);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  width: 100%;
 }
 
 .admin-title {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #fff;
 }
 
 /* Tab Navigation Styles */
 .tab-navigation {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #444;
 }
 
 .tab-button {
-    flex: 1;
-    padding: 10px 0;
-    background: transparent;
-    color: #aaa;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s ease;
+  flex: 1;
+  padding: 10px 0;
+  background: transparent;
+  color: #aaa;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 .tab-button:hover {
-    color: #fff;
+  color: #fff;
 }
 
 .tab-button.active {
-    color: #fff;
-    border-bottom: 3px solid #fff;
+  color: #fff;
+  border-bottom: 3px solid #fff;
 }
 
 .tab-content {
-    display: none;
+  display: none;
 }
 
 .admin-button-group {
-    margin-top: 20px;
-    padding-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  margin-top: 20px;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .admin-button {
-    padding: 12px 15px;
-    background: #444;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s ease;
+  padding: 12px 15px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
 }
 
 .admin-button:hover {
-    background: #666;
+  background: #666;
 }
 
 .status-message {
-    margin-top: 15px;
-    padding-top: 15px;
-    text-align: center;
-    min-height: 20px;
-    font-size: 14px;
-    border-top: 1px solid #444;
+  margin-top: 15px;
+  padding-top: 15px;
+  text-align: center;
+  min-height: 20px;
+  font-size: 14px;
+  border-top: 1px solid #444;
 }
 
 .back-link {
-    margin-top: 20px;
-    color: #aaa;
-    text-decoration: none;
-    text-align: center;
-    display: block;
+  margin-top: 20px;
+  color: #aaa;
+  text-decoration: none;
+  text-align: center;
+  display: block;
 }
 
 .back-link:hover {
-    color: #fff;
+  color: #fff;
 }
 
 .stats-container {
-    margin-top: 20px;
-    padding-top: 10px;
+  margin-top: 20px;
+  padding-top: 10px;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    color: #ddd;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  color: #ddd;
 }
 
 .stats-item {
-    padding: 10px;
-    background: rgba(50, 50, 50, 0.5);
-    border-radius: 5px;
+  padding: 10px;
+  background: rgba(50, 50, 50, 0.5);
+  border-radius: 5px;
 }
 
 .stats-label {
-    font-size: 14px;
-    color: #aaa;
-    margin-bottom: 5px;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 5px;
 }
 
 .stats-value {
-    font-size: 18px;
-    font-weight: 500;
-    color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
 }
 
 /* Settings Styles */
 .settings-container {
-    margin-top: 20px;
-    padding-top: 10px;
+  margin-top: 20px;
+  padding-top: 10px;
 }
 
 .settings-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    color: #ddd;
-    margin-bottom: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  color: #ddd;
+  margin-bottom: 15px;
 }
 
 .settings-item {
-    padding: 10px;
-    background: rgba(50, 50, 50, 0.5);
-    border-radius: 5px;
+  padding: 10px;
+  background: rgba(50, 50, 50, 0.5);
+  border-radius: 5px;
 }
 
 .settings-label {
-    font-size: 14px;
-    color: #aaa;
-    margin-bottom: 5px;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 5px;
 }
 
 .settings-value {
-    font-size: 18px;
-    color: #fff;
+  font-size: 18px;
+  color: #fff;
 }
 
 .settings-value input {
-    width: 100%;
-    padding: 5px;
-    background: #333;
-    color: white;
-    border: 1px solid #444;
-    border-radius: 4px;
-    font-size: 16px;
+  width: 100%;
+  padding: 5px;
+  background: #333;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* Loading and disabled button styles */
+.admin-button:disabled {
+  background: #333;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-button.loading {
+  position: relative;
+  color: transparent;
+}
+
+.admin-button.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }

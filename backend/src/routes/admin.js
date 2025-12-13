@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
-const { scanNAS } = require('../nas-service');
+const { scanNAS, isScanningInProgress } = require('../nas-service');
 const { fetchPhotos } = require('../photo-service');
 
 const router = express.Router();
@@ -15,7 +15,20 @@ router.post('/scan', async (req, res) => {
     res.json({ success: true, message: 'NAS scan completed', result });
   } catch (error) {
     console.error('Error scanning NAS:', error);
-    res.status(500).json({ error: 'Failed to scan NAS' });
+    
+    // Check if this is a concurrent scan attempt
+    if (error.message.includes('already in progress')) {
+      res.status(409).json({ 
+        success: false,
+        error: error.message,
+        isScanInProgress: true 
+      });
+    } else {
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to scan NAS: ' + error.message 
+      });
+    }
   }
 });
 
@@ -43,6 +56,13 @@ router.post('/fetch', async (req, res) => {
     console.error('Error fetching photos:', error);
     res.status(500).json({ error: 'Failed to fetch photos' });
   }
+});
+
+// Endpoint to check scan status
+router.get('/scan/status', (req, res) => {
+  res.json({ 
+    isScanInProgress: isScanningInProgress() 
+  });
 });
 
 module.exports = router;

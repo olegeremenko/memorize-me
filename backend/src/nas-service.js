@@ -12,6 +12,9 @@ const photosDir = process.env.LOCAL_PHOTOS_PATH || path.join(__dirname, '../data
 // Path to config file
 const configPath = path.join(process.cwd(), 'config.json');
 
+// Track if scan is currently in progress
+let isScanInProgress = false;
+
 // Load config.json
 const loadPhotoScanConfig = () => {
   try {
@@ -294,7 +297,13 @@ const clearLocalPhotos = async () => {
 
 // Scan mounted folder for photos
 const scanNAS = async () => {
+  // Check if scan is already in progress
+  if (isScanInProgress) {
+    throw new Error('NAS scan is already in progress. Please wait for the current scan to complete.');
+  }
+  
   console.log('Starting mounted folder scan...');
+  isScanInProgress = true;
   
   try {
     // Ensure NAS is mounted and accessible before proceeding
@@ -343,11 +352,21 @@ const scanNAS = async () => {
   } catch (error) {
     console.error(`Error scanning mounted folder: ${error.message}`);
     throw error;
+  } finally {
+    // Always reset the flag when scan completes or fails
+    isScanInProgress = false;
+    console.log('NAS scan operation completed, flag reset');
   }
+};
+
+// Check if scan is currently in progress
+const isScanningInProgress = () => {
+  return isScanInProgress;
 };
 
 module.exports = {
   getNASClient,
   scanNAS,
-  clearLocalPhotos
+  clearLocalPhotos,
+  isScanningInProgress
 };
