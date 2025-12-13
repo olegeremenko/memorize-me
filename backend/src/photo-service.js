@@ -11,6 +11,9 @@ dotenv.config();
 
 const photosDir = process.env.LOCAL_PHOTOS_PATH || path.join(__dirname, '../data/photos');
 
+// Track if fetch is currently in progress
+let isFetchInProgress = false;
+
 // Resize image using sharp
 const resizeImage = async (inputPath, outputPath, width = 1920) => {
   try {
@@ -27,11 +30,18 @@ const resizeImage = async (inputPath, outputPath, width = 1920) => {
 
 // Fetch random photos from NAS
 const fetchPhotos = async (count = 10) => {
-  console.log(`Fetching ${count} random photos...`);
+  // Check if fetch is already in progress
+  if (isFetchInProgress) {
+    throw new Error('Photo fetch is already in progress. Please wait for the current fetch to complete.');
+  }
   
-  // Clear out existing photos
-  console.log('Clearing local photos directory before fetching new photos');
-  await clearLocalPhotos();
+  console.log(`Fetching ${count} random photos...`);
+  isFetchInProgress = true;
+  
+  try {
+    // Clear out existing photos
+    console.log('Clearing local photos directory before fetching new photos');
+    await clearLocalPhotos();
   
   // Ensure photos directory exists
   await fs.ensureDir(photosDir);
@@ -78,11 +88,24 @@ const fetchPhotos = async (count = 10) => {
     }
   }
   
-  return {
-    fetched,
-    total: photosToDownload.length,
-    message: `Downloaded ${fetched} photos`
-  };
+    return {
+      fetched,
+      total: photosToDownload.length,
+      message: `Downloaded ${fetched} photos`
+    };
+  } catch (error) {
+    console.error(`Error in fetchPhotos: ${error.message}`);
+    throw error;
+  } finally {
+    // Always reset the flag when fetch completes or fails
+    isFetchInProgress = false;
+    console.log('Photo fetch operation completed, flag reset');
+  }
+};
+
+// Check if fetch is currently in progress
+const isFetchingInProgress = () => {
+  return isFetchInProgress;
 };
 
 // Initialize the photos directory
@@ -94,5 +117,6 @@ const initializePhotosDirectory = async () => {
 
 module.exports = {
   fetchPhotos,
-  initializePhotosDirectory
+  initializePhotosDirectory,
+  isFetchingInProgress
 };

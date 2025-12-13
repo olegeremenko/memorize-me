@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoTableBody = document.getElementById('photos-table-body');
     const photoCount = document.getElementById('photo-count');
     const closeModal = document.querySelector('.close');
+    const backgroundProcessesPanel = document.getElementById('background-processes');
     
     // Stats elements
     const statsTotalPhotos = document.getElementById('stats-total-photos');
@@ -24,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tab Navigation
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Job tracking
+    const activeJobs = new Set();
+    let jobPollingInterval = null;
     
     // Initialize tab functionality
     tabButtons.forEach(button => {
@@ -114,11 +119,155 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Job polling functions
+    const startJobPolling = () => {
+        if (jobPollingInterval) return;
+        
+        jobPollingInterval = setInterval(async () => {
+            if (activeJobs.size === 0) {
+                stopJobPolling();
+                return;
+            }
+            
+            try {
+                // Check each active job
+                for (const jobId of activeJobs) {
+                    const response = await fetch(`/api/admin/jobs/${jobId}`);
+                    if (response.ok) {
+                        const job = await response.json();
+                        
+                        if (job.status === 'completed') {
+                            handleJobCompleted(job);
+                            activeJobs.delete(jobId);
+                        } else if (job.status === 'failed') {
+                            handleJobFailed(job);
+                            activeJobs.delete(jobId);
+                        }
+                    } else if (response.status === 404) {
+                        // Job not found, probably completed and cleaned up
+                        console.log(`Job ${jobId} not found, removing from tracking`);
+                        removeProcessFromPanel(jobId);
+                        activeJobs.delete(jobId);
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling jobs:', error);
+            }
+        }, 2000); // Poll every 2 seconds
+    };
+    
+    const stopJobPolling = () => {
+        if (jobPollingInterval) {
+            clearInterval(jobPollingInterval);
+            jobPollingInterval = null;
+        }
+    };
+    
+    const handleJobCompleted = (job) => {
+        removeProcessFromPanel(job.id);
+        
+        if (job.type === 'scan') {
+            showSuccessMessage(`NAS scan completed: ${job.result?.inserted || 0} new photos found`);
+        } else if (job.type === 'fetch') {
+            showSuccessMessage(`Photo fetch completed: ${job.result?.fetched || 0} of ${job.result?.total || 0} photos fetched`);
+        }
+        loadPhotoStats(); // Refresh stats
+    };
+    
+    const handleJobFailed = (job) => {
+        removeProcessFromPanel(job.id);
+        
+        if (job.type === 'scan') {
+            showErrorMessage(`NAS scan failed: ${job.error || 'Unknown error'}`);
+        } else if (job.type === 'fetch') {
+            showErrorMessage(`Photo fetch failed: ${job.error || 'Unknown error'}`);
+        }
+    };
+    
+    const addActiveJob = (jobId, type, description) => {
+        activeJobs.add(jobId);
+        addProcessToPanel(jobId, type, description);
+        startJobPolling();
+    };
+    
+    const addProcessToPanel = (jobId, type, description, isResumed = false) => {
+        const processItem = document.createElement('div');
+        processItem.className = 'process-item';
+        processItem.id = `process-${jobId}`;
+        
+        const statusText = isResumed ? 'In Progress...' : 'Running...';
+        
+        processItem.innerHTML = `
+            <div class="process-info">
+                <span class="process-running"></span>
+                <span class="process-description">${description}</span>
+            </div>
+            <div class="process-status">${statusText}</div>
+        `;
+        
+        backgroundProcessesPanel.appendChild(processItem);
+        backgroundProcessesPanel.style.display = 'block';
+    };
+    
+    const removeProcessFromPanel = (jobId) => {
+        const processItem = document.getElementById(`process-${jobId}`);
+        if (processItem) {
+            processItem.remove();
+        }
+        
+        // Hide panel if no processes remain
+        if (backgroundProcessesPanel.children.length === 0) {
+            backgroundProcessesPanel.style.display = 'none';
+        }
+    };
+    
+    // Check for existing active jobs on page load
+    const checkForActiveJobs = async () => {
+        try {
+            const response = await fetch('/api/admin/jobs');
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.hasActiveJobs && data.activeJobs.length > 0) {
+                    // Resume tracking existing jobs
+                    data.activeJobs.forEach(job => {
+                        activeJobs.add(job.id);
+                        
+                        let description = '';
+                        if (job.type === 'scan') {
+                            description = 'Scanning NAS for new photos';
+                        } else if (job.type === 'fetch') {
+                            description = 'Fetching photos from NAS';
+                        }
+                        
+                        addProcessToPanel(job.id, job.type, description, true);
+                        
+                        // Add resumed styling
+                        const processItem = document.getElementById(`process-${job.id}`);
+                        if (processItem) {
+                            processItem.classList.add('resumed');
+                        }
+                    });
+                    
+                    // Start polling to track these jobs
+                    startJobPolling();
+                    
+                    // Update status message
+                    const jobTypes = data.activeJobs.map(job => job.type).join(' and ');
+                    statusMessageEl.textContent = `Resuming tracking of ${jobTypes} operation(s)...`;
+                    statusMessageEl.style.color = '#ffa500';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking for active jobs:', error);
+        }
+    };
+    
     // Scan NAS for photos
     const scanNAS = async () => {
         try {
             setButtonLoading(scanButton, true);
-            statusMessageEl.textContent = 'Scanning NAS...';
+            statusMessageEl.textContent = 'Starting NAS scan...';
             
             const response = await fetch('/api/admin/scan', {
                 method: 'POST',
@@ -129,9 +278,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            if (data.success) {
-                showSuccessMessage(`NAS scan completed: ${data.result.inserted} new photos found`);
-                // Reload stats after scanning
+            if (data.success && data.isAsync) {
+                // Async operation started
+                showSuccessMessage('NAS scan started in background. You will be notified when complete.');
+                addActiveJob(data.jobId, 'scan', 'Scanning NAS for new photos');
+                statusMessageEl.textContent = 'NAS scan running in background...';
+            } else if (data.success) {
+                // Synchronous completion (shouldn't happen anymore)
+                showSuccessMessage(`NAS scan completed: ${data.result?.inserted || 0} new photos found`);
                 loadPhotoStats();
             } else {
                 // Handle specific case where scan is already in progress
@@ -155,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setButtonLoading(fetchButton, true);
             // Use the value from the settings input field
             const count = parseInt(photosPerDayInput.value) || 10;
-            statusMessageEl.textContent = `Fetching ${count} photos...`;
+            statusMessageEl.textContent = `Starting fetch of ${count} photos...`;
             
             const response = await fetch('/api/admin/fetch', {
                 method: 'POST',
@@ -167,12 +321,22 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            if (data.success) {
-                showSuccessMessage(`Photos fetched: ${data.result.fetched} of ${data.result.total}`);
-                // Reload stats after fetching
+            if (data.success && data.isAsync) {
+                // Async operation started
+                showSuccessMessage(`Photo fetch started in background (${data.count} photos). You will be notified when complete.`);
+                addActiveJob(data.jobId, 'fetch', `Fetching ${data.count} photos from NAS`);
+                statusMessageEl.textContent = `Fetching ${data.count} photos in background...`;
+            } else if (data.success) {
+                // Synchronous completion (shouldn't happen anymore)
+                showSuccessMessage(`Photos fetched: ${data.result?.fetched || 0} of ${data.result?.total || 0}`);
                 loadPhotoStats();
             } else {
-                showErrorMessage('Photo fetch failed: ' + (data.error || 'Unknown error'));
+                // Handle specific case where fetch is already in progress
+                if (response.status === 409 && data.isFetchInProgress) {
+                    showErrorMessage('A photo fetch is already in progress. Please wait for it to complete.');
+                } else {
+                    showErrorMessage('Photo fetch failed: ' + (data.error || 'Unknown error'));
+                }
             }
         } catch (error) {
             console.error('Error fetching photos:', error);
@@ -341,4 +505,12 @@ document.addEventListener('DOMContentLoaded', () => {
             closeDatabaseModal();
         }
     });
+    
+    // Cleanup polling when page is unloaded
+    window.addEventListener('beforeunload', () => {
+        stopJobPolling();
+    });
+    
+    // Check for active jobs after all functions are declared
+    checkForActiveJobs();
 });

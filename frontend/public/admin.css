@@ -214,3 +214,69 @@
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
+
+/* Background process indicators */
+.background-process {
+  background: rgba(255, 165, 0, 0.1);
+  border-left: 3px solid #ffa500;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  color: #ffa500;
+  font-size: 14px;
+}
+
+.background-processes-panel {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #444;
+}
+
+.process-item {
+  background: rgba(255, 165, 0, 0.1);
+  border-left: 4px solid #ffa500;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border-radius: 5px;
+  color: #ffa500;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.process-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.process-status {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.process-item.resumed {
+  border-left-color: #ff8c00;
+  background: rgba(255, 140, 0, 0.1);
+}
+
+.process-item.resumed .process-running {
+  color: #ff8c00;
+}
+
+.process-running::before {
+  content: "⚡";
+  animation: pulse 1.5s infinite;
+  margin-right: 8px;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
