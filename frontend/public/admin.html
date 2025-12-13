@@ -9,18 +9,18 @@
 </head>
 <body>
     <div class="admin-container">
-        <div class="logo-container">
-            <img src="logo.png" alt="Memorize Me Logo" class="logo">
-        </div>
-        
         <div class="admin-card">
-            <h1 class="admin-title">Admin Panel</h1>
+            <h1 class="admin-title">
+                <img src="android-chrome-192x192.png" alt="Memorize Me Logo" class="admin-logo">
+                Admin Panel
+                <a href="/" class="close-button">×</a>
+            </h1>
             
             <!-- Tab Navigation -->
             <div class="tab-navigation">
                 <button class="tab-button active" data-tab="stats">Statistics</button>
                 <button class="tab-button" data-tab="settings">Settings</button>
-                <button class="tab-button" data-tab="admin">Admin Actions</button>
+                <button class="tab-button" data-tab="admin">Actions</button>
             </div>
             
             <!-- Stats Section -->
@@ -82,8 +82,6 @@
             
             <!-- Background process info panel -->
             <div id="background-processes" class="background-processes-panel" style="display: none;"></div>
-            
-            <a href="/" class="back-link">Back to Slideshow</a>
         </div>
     </div>
     

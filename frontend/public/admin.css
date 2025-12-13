@@ -8,15 +8,6 @@
   background-color: #000;
 }
 
-.logo-container {
-  margin-bottom: 30px;
-}
-
-.logo {
-  max-width: 250px;
-  height: auto;
-}
-
 .admin-card {
   background: rgba(30, 30, 30, 0.9);
   padding: 30px;
@@ -27,9 +18,38 @@
 }
 
 .admin-title {
-  text-align: center;
   margin-bottom: 20px;
   color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.admin-title .admin-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.admin-title .close-button {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: bold;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.admin-title .close-button:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Tab Navigation Styles */
@@ -178,6 +198,11 @@
   border: 1px solid #444;
   border-radius: 4px;
   font-size: 16px;
+}
+
+#save-settings-button {
+  margin-left: auto;
+  display: block;
 }
 
 /* Loading and disabled button styles */
