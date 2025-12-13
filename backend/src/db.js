@@ -302,6 +302,7 @@ const getPhotoStats = () => {
           (SELECT COUNT(*) FROM nas_photos) as total_photos,
           (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
           (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
+          (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL AND local_path LIKE 'sameday_%') as same_day_photos,
           (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
         FROM nas_photos LIMIT 1
       `;
@@ -402,6 +403,45 @@ const getNASPhotoById = async (photoId) => {
   });
 };
 
+// Get photos from same day in past years
+const getSameDayPhotosFromPastYears = async (currentDate, count) => {
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    
+    // Get current month and day
+    const month = currentDate.getMonth() + 1; // JS months are 0-indexed
+    const day = currentDate.getDate();
+    const currentYear = currentDate.getFullYear();
+    
+    // Query to find photos from same month/day but different years
+    // We'll look at the filename pattern YYYY-MM-DD_HH-MM-SS
+    const targetDatePattern = `%-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}_%`;
+    const currentYearPattern = `${currentYear}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}_%`;
+    
+    const query = `
+      SELECT np.*, dp.local_path, dp.downloaded_at
+      FROM nas_photos np
+      LEFT JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
+      WHERE dp.deleted_at IS NULL 
+      AND dp.local_path IS NOT NULL
+      AND np.filename LIKE ?
+      AND np.filename NOT LIKE ?
+      ORDER BY RANDOM()
+      LIMIT ?
+    `;
+    
+    db.all(query, [targetDatePattern, currentYearPattern, count], (err, rows) => {
+      db.close();
+      if (err) {
+        console.error('Error getting same day photos from past years:', err);
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
 module.exports = {
   initDatabase,
   getDb,
@@ -413,6 +453,7 @@ module.exports = {
   markPhotoAsDeleted,
   getAllDatabasePhotos,
   getNASPhotoById,
+  getSameDayPhotosFromPastYears,
   getTotalPhotosCount,
   getPhotoStats,
   getLocalPhotoCount

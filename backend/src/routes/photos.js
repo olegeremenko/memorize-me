@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs-extra');
-const { getAllDatabasePhotos, updatePhotoDisplayed, incrementPhotoDownloads, markPhotoAsDeleted } = require('../db');
+const { getAllDatabasePhotos, updatePhotoDisplayed, incrementPhotoDownloads, markPhotoAsDeleted, getSameDayPhotosFromPastYears } = require('../db');
 
 const router = express.Router();
 
@@ -51,6 +51,8 @@ router.get('/', async (req, res) => {
         
         // Parse timestamp from filename if it matches the pattern YYYY-MM-DD_HH-MM-SS.ext
         let relativeTime = null;
+        let isSameDay = false;
+        
         // Extract the base filename without extension
         const baseName = originalFileName.replace(/\.[^/.]+$/, "");
         const timestampMatch = baseName.match(/^(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})/);
@@ -60,6 +62,16 @@ router.get('/', async (req, res) => {
           const timestamp = new Date(dateStr);
           if (!isNaN(timestamp)) {
             relativeTime = getRelativeTimeString(timestamp);
+            
+            // Check if this photo is from the same day in a past year
+            const now = new Date();
+            const photoMonth = timestamp.getMonth();
+            const photoDay = timestamp.getDate();
+            const photoYear = timestamp.getFullYear();
+            
+            isSameDay = (photoMonth === now.getMonth() && 
+                        photoDay === now.getDate() && 
+                        photoYear !== now.getFullYear());
           }
         }
 
@@ -73,7 +85,8 @@ router.get('/', async (req, res) => {
           size: stats.size,
           downloadsCount: dbPhoto ? dbPhoto.downloads_count || 0 : 0,
           isDeleted: isDeleted,
-          relativeTime: relativeTime
+          relativeTime: relativeTime,
+          same_day: isSameDay
         };
       })
       // Filter out deleted photos

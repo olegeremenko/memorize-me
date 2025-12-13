@@ -221,7 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Set the main photo
                 currentPhotoEl.src = photo.path;
                 currentPhotoEl.alt = photo.originalFileName || photo.name;
-                photoNameEl.textContent = photo.originalFileName || photo.name;
+                
+                // Add same-day indicator to photo name if applicable
+                const photoTitle = photo.originalFileName || photo.name;
+                const sameDayIcon = photo.same_day ? ' 📅' : '';
+                photoNameEl.textContent = photoTitle + sameDayIcon;
                 
                 // Create or update the blurred background immediately
                 let photoBackground = document.querySelector('.photo-background');

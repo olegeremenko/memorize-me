@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Settings elements
     const slideshowIntervalInput = document.getElementById('slideshow-interval');
     const photosPerDayInput = document.getElementById('photos-per-day');
+    const sameDayPhotosInput = document.getElementById('same-day-photos');
     const saveSettingsButton = document.getElementById('save-settings-button');
     
     // Tab Navigation
@@ -62,7 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to load and display photo statistics
     async function loadPhotoStats() {
+        const statsLoader = document.getElementById('stats-loader');
+        const statsContent = document.getElementById('stats-content');
+        
         try {
+            statsLoader.style.display = 'block';
+            statsContent.style.display = 'none';
+            
             const response = await fetch('/api/stats/stats');
             const data = await response.json();
             
@@ -77,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update the DOM elements
                 statsTotalPhotos.textContent = stats.total_photos || 0;
                 statsLastScan.textContent = lastScanTime;
-                statsLocalPhotos.textContent = stats.local_photos_count || 0;
+                const sameDayCount = stats.same_day_photos || 0;
+                statsLocalPhotos.textContent = `${stats.local_photos_count || 0}${sameDayCount > 0 ? ` (${sameDayCount} Same day)` : ''}`;
                 statsDeletedPhotos.textContent = stats.deleted_photos || 0;
             } else {
                 // Set default values if no stats were returned
@@ -86,8 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 statsLocalPhotos.textContent = '0';
                 statsDeletedPhotos.textContent = '0';
             }
+            
+            statsLoader.style.display = 'none';
+            statsContent.style.display = 'block';
         } catch (error) {
             console.error('Error loading photo stats:', error);
+            showStatusMessage('Error loading photo stats', 'error');
+            statsLoader.style.display = 'none';
+            statsContent.style.display = 'block';
             // Set error state
             statsTotalPhotos.textContent = 'Error';
             statsLastScan.textContent = 'Error';
@@ -541,10 +555,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update the input fields
                 slideshowIntervalInput.value = settings.slideshowInterval || 300;
                 photosPerDayInput.value = settings.photosPerDay || 10;
+                sameDayPhotosInput.value = settings.sameDayPhotos || 1;
             } else {
                 // Set default values if no settings were returned
                 slideshowIntervalInput.value = 300;
                 photosPerDayInput.value = 10;
+                sameDayPhotosInput.value = 1;
             }
         } catch (error) {
             console.error('Error loading settings:', error);
@@ -560,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const slideshowInterval = parseInt(slideshowIntervalInput.value);
             const photosPerDay = parseInt(photosPerDayInput.value);
+            const sameDayPhotos = parseInt(sameDayPhotosInput.value);
             
             // Basic validation
             if (isNaN(slideshowInterval) || slideshowInterval < 5) {
@@ -572,12 +589,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            if (isNaN(sameDayPhotos) || sameDayPhotos < 0 || sameDayPhotos > 10) {
+                showErrorMessage('Same day photos must be between 0 and 10');
+                return;
+            }
+            
             const response = await fetch('/api/settings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ slideshowInterval, photosPerDay })
+                body: JSON.stringify({ slideshowInterval, photosPerDay, sameDayPhotos })
             });
             
             const data = await response.json();

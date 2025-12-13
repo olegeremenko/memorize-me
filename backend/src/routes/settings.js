@@ -13,7 +13,8 @@ router.get('/', async (req, res) => {
     // Default settings
     let settings = {
       slideshowInterval: 300, // 5 minutes in seconds
-      photosPerDay: 10
+      photosPerDay: 10,
+      sameDayPhotos: 1
     };
     
     // Check if settings file exists
@@ -36,7 +37,7 @@ router.get('/', async (req, res) => {
 // Update system settings
 router.post('/', async (req, res) => {
   try {
-    const { slideshowInterval, photosPerDay } = req.body;
+    const { slideshowInterval, photosPerDay, sameDayPhotos } = req.body;
     
     // Validate settings
     const settings = {};
@@ -55,6 +56,14 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Photos per day must be between 1 and 100' });
       }
       settings.photosPerDay = count;
+    }
+    
+    if (sameDayPhotos !== undefined) {
+      const count = parseInt(sameDayPhotos);
+      if (isNaN(count) || count < 0 || count > 10) {
+        return res.status(400).json({ error: 'Same day photos must be between 0 and 10' });
+      }
+      settings.sameDayPhotos = count;
     }
     
     // Read existing settings

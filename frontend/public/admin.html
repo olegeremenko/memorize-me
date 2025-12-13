@@ -25,23 +25,24 @@
             
             <!-- Stats Section -->
             <div class="tab-content" id="stats-tab" style="display: block;">
-                <div class="stats-container">
+                <div id="stats-loader" class="tab-loader">Loading statistics...</div>
+                <div class="stats-container" id="stats-content" style="display: none;">
                     <div class="stats-grid">
                         <div class="stats-item">
                             <div class="stats-label">Total Photos in Database:</div>
-                            <div class="stats-value" id="stats-total-photos">Loading...</div>
+                            <div class="stats-value" id="stats-total-photos">-</div>
                         </div>
                         <div class="stats-item">
                             <div class="stats-label">Last Scan Time:</div>
-                            <div class="stats-value" id="stats-last-scan">Loading...</div>
+                            <div class="stats-value" id="stats-last-scan">-</div>
                         </div>
                         <div class="stats-item">
                             <div class="stats-label">Photos in Slideshow:</div>
-                            <div class="stats-value" id="stats-local-photos">Loading...</div>
+                            <div class="stats-value" id="stats-local-photos">-</div>
                         </div>
                         <div class="stats-item">
                             <div class="stats-label">Soft-Deleted Photos:</div>
-                            <div class="stats-value" id="stats-deleted-photos">Loading...</div>
+                            <div class="stats-value" id="stats-deleted-photos">-</div>
                         </div>
                     </div>
                 </div>
@@ -61,6 +62,12 @@
                             <div class="settings-label">Photos Per Day:</div>
                             <div class="settings-value">
                                 <input type="number" id="photos-per-day" min="1" max="100">
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">Same Day Photos:</div>
+                            <div class="settings-value">
+                                <input type="number" id="same-day-photos" min="0" max="10">
                             </div>
                         </div>
                     </div>

@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const sharp = require('sharp');
 const dotenv = require('dotenv');
-const { getRandomNonDownloadedPhotos, recordDownloadedPhoto } = require('./db');
+const { getRandomNonDownloadedPhotos, recordDownloadedPhoto, getSameDayPhotosFromPastYears, markPhotoAsDeleted } = require('./db');
 const { getNASClient, clearLocalPhotos } = require('./nas-service');
 const { ensureMountAndVerify } = require('./nas-mount-service');
 
@@ -84,14 +84,84 @@ const fetchPhotos = async (count = 10) => {
       fetched++;
       console.log(`Downloaded and processed: ${photo.filename}`);
     } catch (error) {
-      console.error(`Error processing photo ${photo.filename}:`, error);
+      if (error.code === 'ENOENT' || error.message.includes('no such file')) {
+        console.log(`Photo no longer exists on NAS, marking as deleted: ${photo.filename}`);
+        await markPhotoAsDeleted(photo.id);
+      } else {
+        console.error(`Error processing photo ${photo.filename}:`, error);
+      }
     }
+  }
+  
+  // Fetch same-day photos from past years
+  let sameDayFetched = 0;
+  try {
+    // Load settings to get sameDayPhotos count
+    const settingsPath = path.join(process.cwd(), 'settings.json');
+    let sameDayPhotosCount = 1; // default
+    
+    if (await fs.pathExists(settingsPath)) {
+      const settingsData = await fs.readJson(settingsPath);
+      sameDayPhotosCount = settingsData.sameDayPhotos || 1;
+    }
+    
+    if (sameDayPhotosCount > 0) {
+      console.log(`Fetching ${sameDayPhotosCount} same-day photos from past years...`);
+      const sameDayPhotos = await getSameDayPhotosFromPastYears(new Date(), sameDayPhotosCount);
+      console.log(`Found ${sameDayPhotos.length} same-day photos from past years`);
+      
+      for (const sameDayPhoto of sameDayPhotos) {
+        try {
+          // Check if this photo is already downloaded as same-day
+          const existingPath = path.join(photosDir, path.basename(sameDayPhoto.local_path));
+          if (fs.existsSync(existingPath)) {
+            console.log(`Same-day photo already exists: ${sameDayPhoto.filename}`);
+            continue;
+          }
+          
+          // Get NAS client and download the file
+          const client = getNASClient();
+          await client.connect();
+          
+          const nasFilePath = path.join(process.env.MOUNTED_PHOTOS_PATH || '', sameDayPhoto.path);
+          
+          if (await fs.pathExists(nasFilePath)) {
+            // Generate local filename with same-day prefix
+            const localFilename = `sameday_${path.basename(sameDayPhoto.local_path)}`;
+            const localPath = path.join(photosDir, localFilename);
+            
+            // Copy and resize the image
+            await sharp(nasFilePath)
+              .resize({ width: 1920, withoutEnlargement: true })
+              .jpeg({ quality: 85 })
+              .toFile(localPath);
+            
+            // Record in database
+            await recordDownloadedPhoto(sameDayPhoto.nas_id || sameDayPhoto.id, localFilename);
+            
+            sameDayFetched++;
+            console.log(`Downloaded same-day photo: ${sameDayPhoto.filename}`);
+          }
+        } catch (error) {
+          if (error.code === 'ENOENT' || error.message.includes('no such file')) {
+            console.log(`Same-day photo no longer exists on NAS, marking as deleted: ${sameDayPhoto.filename}`);
+            await markPhotoAsDeleted(sameDayPhoto.nas_id || sameDayPhoto.id);
+          } else {
+            console.error(`Error processing same-day photo ${sameDayPhoto.filename}:`, error);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching same-day photos:', error);
+    // Continue without same-day photos if there's an error
   }
   
     return {
       fetched,
+      sameDayFetched,
       total: photosToDownload.length,
-      message: `Downloaded ${fetched} photos`
+      message: `Downloaded ${fetched} regular photos and ${sameDayFetched} same-day photos`
     };
   } catch (error) {
     console.error(`Error in fetchPhotos: ${error.message}`);
