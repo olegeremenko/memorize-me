@@ -210,9 +210,23 @@ const markPhotoAsDeleted = (photoId) => {
 };
 
 // Get all photos from the database
-const getAllDatabasePhotos = async (limit = null, offset = 0, slideshowOnly = false) => {
+const getAllDatabasePhotos = async (limit = null, offset = 0, slideshowOnly = false, deletedOnly = false) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
+    
+    let whereConditions = [];
+    
+    if (slideshowOnly) {
+      whereConditions.push('dp.local_path IS NOT NULL AND dp.deleted_at IS NULL');
+    }
+    
+    if (deletedOnly) {
+      whereConditions.push('dp.deleted_at IS NOT NULL');
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const joinType = (slideshowOnly || deletedOnly) ? 'INNER' : 'LEFT';
+    
     let query = `
       SELECT 
         np.id as nas_id,
@@ -226,8 +240,8 @@ const getAllDatabasePhotos = async (limit = null, offset = 0, slideshowOnly = fa
         dp.downloads_count as downloads_count,
         dp.deleted_at as deleted_at
       FROM nas_photos np
-      ${slideshowOnly ? 'INNER' : 'LEFT'} JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
-      ${slideshowOnly ? 'WHERE dp.local_path IS NOT NULL AND dp.deleted_at IS NULL' : ''}
+      ${joinType} JOIN downloaded_photos dp ON np.id = dp.nas_photo_id
+      ${whereClause}
       ORDER BY np.filename
     `;
     
@@ -339,7 +353,7 @@ const getLocalPhotoCount = () => {
 };
 
 // Get total count of photos for pagination
-const getTotalPhotosCount = async (slideshowOnly = false) => {
+const getTotalPhotosCount = async (slideshowOnly = false, deletedOnly = false) => {
   if (slideshowOnly) {
     // Use the same approach as getLocalPhotoCount for consistency
     return await getLocalPhotoCount();
@@ -347,7 +361,17 @@ const getTotalPhotosCount = async (slideshowOnly = false) => {
   
   return new Promise((resolve, reject) => {
     const db = getDb();
-    const query = 'SELECT COUNT(*) as total FROM nas_photos np';
+    
+    let whereConditions = [];
+    
+    if (deletedOnly) {
+      whereConditions.push('dp.deleted_at IS NOT NULL');
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const joinType = deletedOnly ? 'INNER' : 'LEFT';
+    
+    const query = `SELECT COUNT(*) as total FROM nas_photos np ${joinType} JOIN downloaded_photos dp ON np.id = dp.nas_photo_id ${whereClause}`;
     
     db.get(query, [], (err, row) => {
       db.close();

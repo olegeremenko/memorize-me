@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalPhotos = 0;
     const pageSize = 100;
     let slideshowFilter = false;
+    let deletedFilter = false;
     
     // Initialize tab functionality
     tabButtons.forEach(button => {
@@ -359,12 +360,19 @@ document.addEventListener('DOMContentLoaded', () => {
             setButtonLoading(showDatabaseButton, true);
             if (useCurrentFilter) {
                 slideshowFilter = document.getElementById('downloaded-filter')?.checked || false;
+                deletedFilter = document.getElementById('deleted-filter')?.checked || false;
             }
             
-            const filterText = slideshowFilter ? ' (slideshow only)' : '';
+            let filterText = '';
+            if (slideshowFilter) filterText = ' (slideshow only)';
+            else if (deletedFilter) filterText = ' (deleted only)';
+            
             statusMessageEl.textContent = `Loading database photos${filterText} (page ${page})...`;
             
-            const filterParam = slideshowFilter ? '&slideshowOnly=true' : '';
+            const filterParams = [];
+            if (slideshowFilter) filterParams.push('slideshowOnly=true');
+            if (deletedFilter) filterParams.push('deletedOnly=true');
+            const filterParam = filterParams.length > 0 ? '&' + filterParams.join('&') : '';
             const url = `/api/stats?page=${page}&limit=${pageSize}${filterParam}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -474,7 +482,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${lastModified}</td>
                 <td class="${downloadedClass}">${downloadedText}</td>
                 <td class="download-cell">${downloadCell}</td>
-                <td>${photo.downloads_count || '0'}</td>
             `;
             
             photoTableBody.appendChild(row);
@@ -488,10 +495,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const openDatabaseModal = async () => {
         photoDatabaseModal.style.display = 'block';
         
-        // Add filter toggle event listener
-        const filterToggle = document.getElementById('downloaded-filter');
-        if (filterToggle) {
-            filterToggle.addEventListener('change', () => {
+        // Add filter toggle event listeners
+        const downloadedFilterToggle = document.getElementById('downloaded-filter');
+        const deletedFilterToggle = document.getElementById('deleted-filter');
+        
+        if (downloadedFilterToggle) {
+            downloadedFilterToggle.addEventListener('change', () => {
+                // Uncheck deleted filter if slideshow filter is checked
+                if (downloadedFilterToggle.checked && deletedFilterToggle) {
+                    deletedFilterToggle.checked = false;
+                }
+                currentPage = 1; // Reset to first page when filter changes
+                loadDatabasePhotos(1, true);
+            });
+        }
+        
+        if (deletedFilterToggle) {
+            deletedFilterToggle.addEventListener('change', () => {
+                // Uncheck slideshow filter if deleted filter is checked
+                if (deletedFilterToggle.checked && downloadedFilterToggle) {
+                    downloadedFilterToggle.checked = false;
+                }
                 currentPage = 1; // Reset to first page when filter changes
                 loadDatabasePhotos(1, true);
             });

@@ -9,19 +9,20 @@ router.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 100;
     const offset = (page - 1) * limit;
     const slideshowOnly = req.query.slideshowOnly === 'true';
+    const deletedOnly = req.query.deletedOnly === 'true';
     
-    const totalCount = await getTotalPhotosCount(slideshowOnly);
+    const totalCount = await getTotalPhotosCount(slideshowOnly, deletedOnly);
     const totalPages = Math.ceil(totalCount / limit);
     
-    // For slideshow filter, we need to handle pagination differently since we filter after DB query
+    // For special filters, we need to handle pagination differently since we filter after DB query
     let photos;
-    if (slideshowOnly) {
-      const allSlideshowPhotos = await getAllDatabasePhotos(null, 0, slideshowOnly);
+    if (slideshowOnly || deletedOnly) {
+      const allFilteredPhotos = await getAllDatabasePhotos(null, 0, slideshowOnly, deletedOnly);
       const startIndex = offset;
       const endIndex = startIndex + limit;
-      photos = allSlideshowPhotos.slice(startIndex, endIndex);
+      photos = allFilteredPhotos.slice(startIndex, endIndex);
     } else {
-      photos = await getAllDatabasePhotos(limit, offset, slideshowOnly);
+      photos = await getAllDatabasePhotos(limit, offset, slideshowOnly, deletedOnly);
     }
     
     res.json({ 

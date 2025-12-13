@@ -97,7 +97,11 @@
                     <div class="filter-section">
                         <label class="filter-toggle">
                             <input type="checkbox" id="downloaded-filter" />
-                            <span class="filter-label">Show only slideshow photos</span>
+                            <span class="filter-label">Show slideshow photos</span>
+                        </label>
+                        <label class="filter-toggle">
+                            <input type="checkbox" id="deleted-filter" />
+                            <span class="filter-label">Show deleted photos</span>
                         </label>
                     </div>
                     <div class="pagination-section">
@@ -115,7 +119,6 @@
                                 <th>Last Modified</th>
                                 <th>Was in Slideshow</th>
                                 <th>Download</th>
-                                <th>Downloads Count</th>
                             </tr>
                         </thead>
                         <tbody id="photos-table-body">

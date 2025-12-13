@@ -346,6 +346,11 @@
   cursor: pointer;
 }
 
+.filter-toggle {
+  margin-right: 15px;
+  display: inline-block;
+}
+
 .download-cell {
   text-align: center;
 }
