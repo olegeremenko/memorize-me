@@ -93,6 +93,10 @@ html {
   font-size: 14px;
 }
 
+#photo-details {
+  display: none;
+}
+
 /* Text info container */
 .photo-info-text {
   flex: 1;

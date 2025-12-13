@@ -232,20 +232,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 photoBackground.style.backgroundImage = `url(${photo.path})`;
                 
-                // Show file details
-                const downloadsCount = photo.downloadsCount !== undefined ? photo.downloadsCount : 0;
-                photoDetailsEl.textContent = `Views: ${downloadsCount}`;
+                // Combine date and NAS path in one line
+                let dateText = '';
+                let pathText = '';
                 
-                // Display relative time if available
+                // Get date text
                 if (photo.relativeTime) {
-                    photoDateEl.textContent = photo.relativeTime;
+                    dateText = photo.relativeTime;
                 } else if (photo.date) {
-                    // Format the date if relativeTime is not available
                     const photoDate = new Date(photo.date);
-                    photoDateEl.textContent = photoDate.toLocaleDateString();
-                } else {
-                    photoDateEl.textContent = '';
+                    dateText = photoDate.toLocaleDateString();
                 }
+                
+                // Get NAS path (directory only, without filename)
+                if (photo.nasPath) {
+                    const pathParts = photo.nasPath.split('/');
+                    const directoryPath = pathParts.slice(0, -1).join('/'); // Remove filename
+                    pathText = directoryPath || 'Root';
+                }
+                
+                // Combine with delimiter
+                let combinedText = '';
+                if (dateText && pathText) {
+                    combinedText = `${dateText} • ${pathText}`;
+                } else if (dateText) {
+                    combinedText = dateText;
+                } else if (pathText) {
+                    combinedText = pathText;
+                }
+                
+                photoDateEl.textContent = combinedText;
+                photoDetailsEl.textContent = ''; // Clear the details element
                 
                 // Update viewed timestamp in the database if we have a photo ID
                 if (photo.id) {

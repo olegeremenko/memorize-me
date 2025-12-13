@@ -42,11 +42,12 @@ router.get('/', async (req, res) => {
       .map(file => {
         const stats = fs.statSync(path.join(photosDir, file));
 
-        // Match with database record to get ID
+        // Match with database record to get ID and NAS info
         const dbPhoto = dbPhotos.find(p => p.local_path === file);
         const photoId = dbPhoto ? dbPhoto.downloaded_id : null;
         const isDeleted = dbPhoto ? dbPhoto.deleted_at !== null : false;
         const originalFileName = dbPhoto ? dbPhoto.nas_filename : file;
+        const nasPath = dbPhoto ? dbPhoto.nas_path : null;
         
         // Parse timestamp from filename if it matches the pattern YYYY-MM-DD_HH-MM-SS.ext
         let relativeTime = null;
@@ -66,6 +67,7 @@ router.get('/', async (req, res) => {
           id: photoId,
           name: file,
           originalFileName: originalFileName, // Add original filename from NAS
+          nasPath: nasPath, // Add full NAS path
           path: `/photos/${file}`,
           date: dbPhoto?.nas_last_modified || stats.mtime.toISOString(),
           size: stats.size,
