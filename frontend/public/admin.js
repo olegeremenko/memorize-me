@@ -33,6 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const nasConfigModalClose = nasConfigModal.querySelector('.close');
     const nasConfigContent = document.getElementById('nas-config-content');
     
+    // Scan confirmation modal elements
+    const scanConfirmModal = document.getElementById('scan-confirm-modal');
+    const scanConfirmModalClose = scanConfirmModal.querySelector('.close');
+    const cancelScanButton = document.getElementById('cancel-scan');
+    const confirmScanButton = document.getElementById('confirm-scan');
+    
+    // Fetch confirmation modal elements
+    const fetchConfirmModal = document.getElementById('fetch-confirm-modal');
+    const fetchConfirmModalClose = fetchConfirmModal.querySelector('.close');
+    const cancelFetchButton = document.getElementById('cancel-fetch');
+    const confirmFetchButton = document.getElementById('confirm-fetch');
+    
     // Global variable to store NAS config
     let currentNasConfig = null;
     
@@ -89,8 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? new Date(stats.last_scan_time).toLocaleString()
                     : 'Never';
                 
+                // Calculate percentage of downloaded photos
+                const totalPhotos = stats.total_photos || 0;
+                const downloadedPhotos = stats.downloaded_photos || 0;
+                const percentage = totalPhotos > 0 ? Math.round((downloadedPhotos / totalPhotos) * 100) : 0;
+                
                 // Update the DOM elements
-                statsTotalPhotos.textContent = stats.total_photos || 0;
+                statsTotalPhotos.textContent = `${totalPhotos} (${percentage}% viewed)`;
                 statsLastScan.textContent = lastScanTime;
                 statsDeletedPhotos.textContent = stats.deleted_photos || 0;
                 
@@ -334,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Scan NAS for photos
-    const scanNAS = async () => {
+    const executeScanNAS = async () => {
         try {
             setButtonLoading(scanButton, true);
             statusMessageEl.textContent = 'Starting NAS scan...';
@@ -374,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Fetch photos from NAS
-    const fetchPhotos = async () => {
+    const executeFetchPhotos = async () => {
         try {
             setButtonLoading(fetchButton, true);
             // Use the value from the settings input field
@@ -414,6 +431,36 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             setButtonLoading(fetchButton, false);
         }
+    };
+    
+    // Show scan confirmation modal
+    const showScanConfirmModal = () => {
+        scanConfirmModal.style.display = 'block';
+    };
+    
+    // Hide scan confirmation modal
+    const hideScanConfirmModal = () => {
+        scanConfirmModal.style.display = 'none';
+    };
+    
+    // Show fetch confirmation modal
+    const showFetchConfirmModal = () => {
+        fetchConfirmModal.style.display = 'block';
+    };
+    
+    // Hide fetch confirmation modal
+    const hideFetchConfirmModal = () => {
+        fetchConfirmModal.style.display = 'none';
+    };
+    
+    // New scanNAS function with confirmation
+    const scanNAS = () => {
+        showScanConfirmModal();
+    };
+    
+    // New fetchPhotos function with confirmation
+    const fetchPhotos = () => {
+        showFetchConfirmModal();
     };
     
     // Load and display database photos in the modal
@@ -664,6 +711,22 @@ document.addEventListener('DOMContentLoaded', () => {
     showNasConfigButton.addEventListener('click', showNasConfigModal);
     nasConfigModalClose.addEventListener('click', closeNasConfigModal);
     
+    // Scan confirmation modal event listeners
+    scanConfirmModalClose.addEventListener('click', hideScanConfirmModal);
+    cancelScanButton.addEventListener('click', hideScanConfirmModal);
+    confirmScanButton.addEventListener('click', () => {
+        hideScanConfirmModal();
+        executeScanNAS();
+    });
+    
+    // Fetch confirmation modal event listeners
+    fetchConfirmModalClose.addEventListener('click', hideFetchConfirmModal);
+    cancelFetchButton.addEventListener('click', hideFetchConfirmModal);
+    confirmFetchButton.addEventListener('click', () => {
+        hideFetchConfirmModal();
+        executeFetchPhotos();
+    });
+    
     // Close modal when clicking outside of it
     window.addEventListener('click', (event) => {
         if (event.target === photoDatabaseModal) {
@@ -671,6 +734,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (event.target === nasConfigModal) {
             closeNasConfigModal();
+        }
+        if (event.target === scanConfirmModal) {
+            hideScanConfirmModal();
+        }
+        if (event.target === fetchConfirmModal) {
+            hideFetchConfirmModal();
         }
     });
     

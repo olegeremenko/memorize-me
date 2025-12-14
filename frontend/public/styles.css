@@ -425,6 +425,19 @@ html {
   background: #d32f2f;
 }
 
+/* Delete confirmation modal - narrower width */
+#delete-modal .modal-content {
+  max-width: 400px;
+  width: 90%;
+}
+
+/* Admin action confirmation modals - narrower width */
+#scan-confirm-modal .modal-content,
+#fetch-confirm-modal .modal-content {
+  max-width: 450px;
+  width: 90%;
+}
+
 /* Fullscreen specific styles */
 :fullscreen .photo-container {
   width: 100vw;

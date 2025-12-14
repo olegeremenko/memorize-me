@@ -151,6 +151,42 @@
         </div>
     </div>
     
+    <!-- Scan NAS confirmation modal -->
+    <div id="scan-confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm NAS Scan</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to scan the NAS for new photos?</p>
+                <p>This operation will check all configured NAS folders and may take several minutes depending on the number of files.</p>
+                <div class="modal-buttons">
+                    <button id="cancel-scan" class="modal-button">Cancel</button>
+                    <button id="confirm-scan" class="modal-button confirm">Start Scan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fetch Photos confirmation modal -->
+    <div id="fetch-confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Fetch Photos</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to fetch photos from the NAS?</p>
+                <p>This will download and process photos for the slideshow. The number of photos to fetch is determined by the "Photos Per Day" setting.</p>
+                <div class="modal-buttons">
+                    <button id="cancel-fetch" class="modal-button">Cancel</button>
+                    <button id="confirm-fetch" class="modal-button confirm">Start Fetch</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="admin.js"></script>
 </body>
 </html>

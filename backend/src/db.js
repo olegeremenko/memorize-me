@@ -299,7 +299,7 @@ const getPhotoStats = () => {
     const query = `
       SELECT 
         (SELECT COUNT(*) FROM nas_photos) as total_photos,
-        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
+        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as downloaded_photos,
         (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
         (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
       FROM nas_photos LIMIT 1
@@ -312,7 +312,7 @@ const getPhotoStats = () => {
       } else {
         resolve(stats || {
           total_photos: 0,
-          active_photos: 0,
+          downloaded_photos: 0,
           deleted_photos: 0,
           last_scan_time: null
         });
