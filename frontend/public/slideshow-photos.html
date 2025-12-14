@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorize Me - Slideshow Photos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="slideshow-photos.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-card slideshow-photos-card">
+            <h1 class="admin-title">
+                <img src="android-chrome-192x192.png" alt="Memorize Me Logo" class="admin-logo">
+                Slideshow Photos
+                <a href="/" class="close-button">×</a>
+            </h1>
+            
+            <!-- Filter and Search Section -->
+            <div class="slideshow-controls">
+                <div class="search-section">
+                    <input type="text" id="search-input" placeholder="Search photos by name or path..." />
+                    <button id="clear-search" class="clear-btn">Clear</button>
+                </div>
+                
+                <div class="filter-section">
+                    <label class="filter-toggle">
+                        <input type="checkbox" id="same-day-filter" />
+                        <span class="filter-label">Same-day photos only</span>
+                    </label>
+                    <div class="stats-display">
+                        <span id="photo-count-display">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="slideshow-loader" class="tab-loader">Loading slideshow photos...</div>
+            
+            <!-- Photos Display -->
+            <div id="slideshow-content" class="slideshow-photos-content" style="display: none;">
+                <div class="table-container">
+                    <table id="photos-table">
+                        <thead>
+                            <tr>
+                                <th>Thumbnail</th>
+                                <th>File Info</th>
+                                <th>Date/Time</th>
+                                <th>Same Day</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="photos-table-body">
+                            <!-- Table rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Status message -->
+            <div id="status-message" class="status-message"></div>
+        </div>
+    </div>
+    
+    <script src="slideshow-photos.js"></script>
+</body>
+</html>

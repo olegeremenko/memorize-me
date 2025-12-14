@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalPages = 1;
     let totalPhotos = 0;
     const pageSize = 100;
-    let slideshowFilter = false;
     let deletedFilter = false;
     
     // Initialize tab functionality
@@ -422,18 +421,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             setButtonLoading(showDatabaseButton, true);
             if (useCurrentFilter) {
-                slideshowFilter = document.getElementById('downloaded-filter')?.checked || false;
                 deletedFilter = document.getElementById('deleted-filter')?.checked || false;
             }
             
             let filterText = '';
-            if (slideshowFilter) filterText = ' (slideshow only)';
-            else if (deletedFilter) filterText = ' (deleted only)';
+            if (deletedFilter) filterText = ' (deleted only)';
             
             statusMessageEl.textContent = `Loading database photos${filterText} (page ${page})...`;
             
             const filterParams = [];
-            if (slideshowFilter) filterParams.push('slideshowOnly=true');
             if (deletedFilter) filterParams.push('deletedOnly=true');
             const filterParam = filterParams.length > 0 ? '&' + filterParams.join('&') : '';
             const url = `/api/stats?page=${page}&limit=${pageSize}${filterParam}`;
@@ -503,21 +499,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? new Date(photo.nas_last_modified).toLocaleDateString() 
                 : 'N/A';
             
-            // Check if photo is downloaded and handle slideshow view
+            // Check if photo is downloaded
             const isDownloaded = photo.downloaded_id ? true : false;
-            let slideshowCell = '';
-            
-            if (slideshowFilter && isDownloaded) {
-                // When filtering by slideshow, show view icon instead of "Yes"
-                slideshowCell = `<button class="view-in-slideshow-btn" title="View in slideshow" onclick="navigateToPhotoInSlideshow(${JSON.stringify(photo).replace(/"/g, '&quot;')})">
-                    🖼️
-                </button>`;
-            } else {
-                // Normal view - show Yes/No
-                const downloadedClass = isDownloaded ? 'downloaded-yes' : 'downloaded-no';
-                const downloadedText = isDownloaded ? 'Yes' : 'No';
-                slideshowCell = `<span class="${downloadedClass}">${downloadedText}</span>`;
-            }
+            const downloadedClass = isDownloaded ? 'downloaded-yes' : 'downloaded-no';
+            const downloadedText = isDownloaded ? 'Yes' : 'No';
+            const slideshowCell = `<span class="${downloadedClass}">${downloadedText}</span>`;
             
             // Create download link/icon based on availability
             let downloadCell = 'N/A';
@@ -570,26 +556,10 @@ document.addEventListener('DOMContentLoaded', () => {
         photoDatabaseModal.style.display = 'block';
         
         // Add filter toggle event listeners
-        const downloadedFilterToggle = document.getElementById('downloaded-filter');
         const deletedFilterToggle = document.getElementById('deleted-filter');
-        
-        if (downloadedFilterToggle) {
-            downloadedFilterToggle.addEventListener('change', () => {
-                // Uncheck deleted filter if slideshow filter is checked
-                if (downloadedFilterToggle.checked && deletedFilterToggle) {
-                    deletedFilterToggle.checked = false;
-                }
-                currentPage = 1; // Reset to first page when filter changes
-                loadDatabasePhotos(1, true);
-            });
-        }
         
         if (deletedFilterToggle) {
             deletedFilterToggle.addEventListener('change', () => {
-                // Uncheck slideshow filter if deleted filter is checked
-                if (deletedFilterToggle.checked && downloadedFilterToggle) {
-                    downloadedFilterToggle.checked = false;
-                }
                 currentPage = 1; // Reset to first page when filter changes
                 loadDatabasePhotos(1, true);
             });

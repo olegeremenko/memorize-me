@@ -48,6 +48,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/public/admin.html'));
 });
 
+// Serve the slideshow photos page
+app.get('/slideshow-photos', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/public/slideshow-photos.html'));
+});
+
 // Start server
 app.listen(PORT, HOST, () => {
   console.log(`Server running at http://${HOST}:${PORT}`);
