@@ -294,47 +294,30 @@ const getAllDatabasePhotos = async (limit = null, offset = 0, slideshowOnly = fa
 
 // Get statistics for the admin dashboard
 const getPhotoStats = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const db = getDb();
-      const query = `
-        SELECT 
-          (SELECT COUNT(*) FROM nas_photos) as total_photos,
-          (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
-          (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
-          (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL AND local_path LIKE 'sameday_%') as same_day_photos,
-          (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
-        FROM nas_photos LIMIT 1
-      `;
-      
-      // Get database stats
-      const dbStats = await new Promise((res, rej) => {
-        db.get(query, [], (err, stats) => {
-          db.close();
-          if (err) {
-            rej(err);
-          } else {
-            res(stats || {
-              total_photos: 0,
-              active_photos: 0,
-              deleted_photos: 0,
-              last_scan_time: null
-            });
-          }
+  return new Promise((resolve, reject) => {
+    const db = getDb();
+    const query = `
+      SELECT 
+        (SELECT COUNT(*) FROM nas_photos) as total_photos,
+        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NULL) as active_photos,
+        (SELECT COUNT(*) FROM downloaded_photos WHERE deleted_at IS NOT NULL) as deleted_photos,
+        (SELECT MAX(created_at) FROM nas_photos) as last_scan_time
+      FROM nas_photos LIMIT 1
+    `;
+    
+    db.get(query, [], (err, stats) => {
+      db.close();
+      if (err) {
+        reject(err);
+      } else {
+        resolve(stats || {
+          total_photos: 0,
+          active_photos: 0,
+          deleted_photos: 0,
+          last_scan_time: null
         });
-      });
-      
-      // Count actual files in photos directory
-      const filesCount = await getLocalPhotoCount();
-      
-      // Combine stats
-      resolve({
-        ...dbStats,
-        local_photos_count: filesCount
-      });
-    } catch (err) {
-      reject(err);
-    }
+      }
+    });
   });
 };
 
@@ -352,6 +335,8 @@ const getLocalPhotoCount = () => {
     }
   });
 };
+
+
 
 // Get total count of photos for pagination
 const getTotalPhotosCount = async (slideshowOnly = false, deletedOnly = false) => {

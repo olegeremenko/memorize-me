@@ -93,9 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update the DOM elements
                 statsTotalPhotos.textContent = stats.total_photos || 0;
                 statsLastScan.textContent = lastScanTime;
-                const sameDayCount = stats.same_day_photos || 0;
-                statsLocalPhotos.textContent = `${stats.local_photos_count || 0}${sameDayCount > 0 ? ` (${sameDayCount} Same day)` : ''}`;
                 statsDeletedPhotos.textContent = stats.deleted_photos || 0;
+                
+                // Get dynamic slideshow stats from photos endpoint
+                updateSlideshowStats();
             } else {
                 // Set default values if no stats were returned
                 statsTotalPhotos.textContent = '0';
@@ -138,6 +139,45 @@ document.addEventListener('DOMContentLoaded', () => {
             statusMessageEl.textContent = '';
         }, 5000);
     };
+
+    // Update slideshow statistics dynamically from photos endpoint
+    const updateSlideshowStats = async () => {
+        try {
+            const response = await fetch('/api/photos');
+            const data = await response.json();
+            
+            if (data && data.photos) {
+                const totalSlideshowPhotos = data.photos.length;
+                const sameDayCount = data.photos.filter(photo => photo.same_day).length;
+                
+                statsLocalPhotos.textContent = `${totalSlideshowPhotos}${sameDayCount > 0 ? ` (${sameDayCount} Same day)` : ''}`;
+            } else {
+                statsLocalPhotos.textContent = '0';
+            }
+        } catch (error) {
+            console.error('Error fetching slideshow stats:', error);
+            statsLocalPhotos.textContent = 'Error loading';
+        }
+    };
+
+    // Navigate to specific photo in slideshow
+    const navigateToPhotoInSlideshow = (photo) => {
+        // Store the target photo info in localStorage for the slideshow to pick up
+        const targetPhoto = {
+            filename: photo.local_path,
+            nas_filename: photo.nas_filename,
+            downloaded_id: photo.downloaded_id,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('memorize_me_target_photo', JSON.stringify(targetPhoto));
+        
+        // Close the modal and navigate to slideshow
+        closeDatabaseModal();
+        window.location.href = '/';
+    };
+
+    // Make functions globally accessible for pagination and navigation
+    window.navigateToPhotoInSlideshow = navigateToPhotoInSlideshow;
     
     // Set button loading state
     const setButtonLoading = (button, loading) => {
@@ -463,10 +503,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? new Date(photo.nas_last_modified).toLocaleDateString() 
                 : 'N/A';
             
-            // Check if photo is downloaded
+            // Check if photo is downloaded and handle slideshow view
             const isDownloaded = photo.downloaded_id ? true : false;
-            const downloadedClass = isDownloaded ? 'downloaded-yes' : 'downloaded-no';
-            const downloadedText = isDownloaded ? 'Yes' : 'No';
+            let slideshowCell = '';
+            
+            if (slideshowFilter && isDownloaded) {
+                // When filtering by slideshow, show view icon instead of "Yes"
+                slideshowCell = `<button class="view-in-slideshow-btn" title="View in slideshow" onclick="navigateToPhotoInSlideshow(${JSON.stringify(photo).replace(/"/g, '&quot;')})">
+                    🖼️
+                </button>`;
+            } else {
+                // Normal view - show Yes/No
+                const downloadedClass = isDownloaded ? 'downloaded-yes' : 'downloaded-no';
+                const downloadedText = isDownloaded ? 'Yes' : 'No';
+                slideshowCell = `<span class="${downloadedClass}">${downloadedText}</span>`;
+            }
             
             // Create download link/icon based on availability
             let downloadCell = 'N/A';
@@ -503,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                 <td>${sizeMB}</td>
                 <td>${lastModified}</td>
-                <td class="${downloadedClass}">${downloadedText}</td>
+                <td class="slideshow-cell">${slideshowCell}</td>
                 <td class="download-cell">${downloadCell}</td>
             `;
             

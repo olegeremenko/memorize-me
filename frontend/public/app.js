@@ -126,6 +126,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Check for target photo navigation from admin panel
+    const checkForTargetPhoto = () => {
+        try {
+            const targetPhotoData = localStorage.getItem('memorize_me_target_photo');
+            if (targetPhotoData) {
+                const targetPhoto = JSON.parse(targetPhotoData);
+                
+                // Check if the target is recent (within 30 seconds) to avoid stale navigation
+                if (Date.now() - targetPhoto.timestamp < 30000) {
+                    // Find the target photo in our photos array
+                    let targetIndex = -1;
+                    
+                    if (targetPhoto.filename) {
+                        targetIndex = photos.findIndex(photo => photo.name === targetPhoto.filename);
+                    }
+                    
+                    // Fallback: try to match by downloaded_id or nas_filename
+                    if (targetIndex === -1 && targetPhoto.downloaded_id) {
+                        targetIndex = photos.findIndex(photo => photo.id === targetPhoto.downloaded_id);
+                    }
+                    
+                    if (targetIndex === -1 && targetPhoto.nas_filename) {
+                        targetIndex = photos.findIndex(photo => photo.originalFileName === targetPhoto.nas_filename);
+                    }
+                    
+                    if (targetIndex !== -1) {
+                        console.log(`Navigating to target photo at index ${targetIndex}`);
+                        showPhoto(targetIndex);
+                        showSuccessMessage(`Jumped to photo: ${photos[targetIndex].originalFileName || photos[targetIndex].name}`);
+                    } else {
+                        console.warn('Target photo not found in current slideshow');
+                        showErrorMessage('Target photo not found in slideshow');
+                    }
+                }
+                
+                // Clear the target photo data regardless
+                localStorage.removeItem('memorize_me_target_photo');
+            }
+        } catch (error) {
+            console.error('Error checking for target photo:', error);
+            localStorage.removeItem('memorize_me_target_photo');
+        }
+    };
+
     // Initialize the application
     const init = async () => {
         // Hide navigation buttons by default
@@ -144,7 +188,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await loadPhotos();
             if (photos.length > 0) {
-                showPhoto(0);
+                // Check if we need to navigate to a specific photo first
+                checkForTargetPhoto();
+                
+                // If no target photo was set, show the first photo
+                if (currentPhotoIndex === 0) {
+                    showPhoto(0);
+                }
+                
                 startSlideshow();
             } else {
                 showNoPhotosMessage();

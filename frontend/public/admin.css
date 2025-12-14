@@ -400,6 +400,29 @@
   background-color: rgba(255, 152, 0, 0.1);
 }
 
+.view-in-slideshow-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  color: #2196f3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-in-slideshow-btn:hover {
+  background-color: rgba(33, 150, 243, 0.1);
+  transform: scale(1.1);
+}
+
+.slideshow-cell {
+  text-align: center;
+}
+
 .pagination-header {
   display: flex;
   align-items: center;
